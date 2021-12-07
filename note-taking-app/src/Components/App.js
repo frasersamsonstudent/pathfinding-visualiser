@@ -1,11 +1,19 @@
 import './App.css';
 
-function App() {
+export default function App() {
   return (
     <div className="App">
-      App content
+      <div className = "pageHeader">Header</div>
+
+      <div className="mainContent">
+        <div className="sidePanel">
+          <div className="title">Panel</div>
+          <div className="panelItem">item</div>
+        </div>
+        
+        <div className="divider"></div>
+        <div className="editorContainer">editor</div>
+      </div>
     </div>
   );
-}
-
-export default App;
+};
