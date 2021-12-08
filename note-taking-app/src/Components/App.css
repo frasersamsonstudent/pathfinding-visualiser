@@ -17,6 +17,8 @@
 .sidePanel {
     width: 300px;
     background-color: #3E4C59;
+    height: 100%;
+    margin: 15px 10px 15px 10px;
 }
 
 .sidePanel .title {
