@@ -11,24 +11,7 @@
 
 .mainContent {
     display: flex;
-    height: 100%
-}
-
-.sidePanel {
-    width: 300px;
-    background-color: #3E4C59;
     height: 100%;
-    margin: 15px 10px 15px 10px;
-}
-
-.sidePanel .title {
-    font-size: 150%;
-    margin: 10px 0 0 15px;
-}
-
-.sidePanel .panelItem {
-    font-size: 100%;
-    margin: 10px 0 0 25px;
 }
 
 .editorContainer {

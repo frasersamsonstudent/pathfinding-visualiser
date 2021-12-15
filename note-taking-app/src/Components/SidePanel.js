@@ -1,12 +1,24 @@
 import React from 'react'
+import './SidePanel.css'
 
 export default function SidePanel(props) {
     const notes = []
     if(props.notes) {
         props.notes.forEach(
-            (note) => {
+            (note, index) => {
+                let activeOrInactiveClass = '';
+                if(props.activeNoteIndex !== undefined) {
+                    activeOrInactiveClass = props.activeNoteIndex === index ? ' activeNote' : ' inactiveNote';
+                };
+
                 notes.push(
-                    <li className="panelItem">note</li>
+                    <li 
+                        key={index} 
+                        className = {"panelItem" + activeOrInactiveClass}
+                        onClick = {props.setNoteAtIndexToActive ? () => {props.setNoteAtIndexToActive(index)} : undefined}
+                    >
+                        {note.text}
+                    </li>
                 )
             }
         )
@@ -15,11 +27,10 @@ export default function SidePanel(props) {
     return (
         <div className="sidePanel">
             <div className="title">Notes2</div>
-            <ul>
+            
+            <ul className="panelItemList">
                 {notes}
             </ul>
-           
-            
         </div>
     )
 }
