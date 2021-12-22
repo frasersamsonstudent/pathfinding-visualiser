@@ -13,7 +13,17 @@ export default function NoteEditor(props) {
             ContentState.createFromText(note.text)
         );
     }
+
+    const saveCurrentNote = () => {
+        if(currentNote) {
+            props.updateNoteContent(currentNote, editorState.getCurrentContent().getPlainText());
+        }
+    };
+
     const openNote = (note) => {
+        // Save note if a note is already open
+        saveCurrentNote();
+        
         setEditorState(
             getContextForNote(note)
         );
@@ -32,6 +42,13 @@ export default function NoteEditor(props) {
                 editorState = {editorState}
                 onChange    = {setEditorState}
             />
+            <button 
+                className="saveButton"
+                onClick = {saveCurrentNote}
+            >
+                    Save
+            </button>
+
         </div>
     )
 }

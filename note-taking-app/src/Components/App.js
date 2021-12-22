@@ -2,13 +2,14 @@ import './App.css';
 import React, {useEffect, useState} from 'react';
 import NoteEditor from './NoteEditor';
 import SidePanel from './SidePanel';
-
+import {v4 as uuidv4} from 'uuid';
 
 class Note {
-  constructor(noteTitle, noteText) {
+  constructor(noteTitle, noteText, uniqueId=uuidv4()) {
+    this.uniqueId = uniqueId;
     this.title = noteTitle;
     this.text = noteText;
-  }
+  };
 };
 
 export default function App() {
@@ -22,6 +23,32 @@ export default function App() {
       new Note('Note 2', 'Some content')
     ]);
   }
+
+  const addNote = (noteTitle, noteContent) => {
+    setNotes(
+      [
+        ...notes, 
+        new Note(noteTitle, noteContent)
+      ]
+    );
+  };
+
+  const updateNoteContent = (noteToUpdate, newNoteContent) => {
+    setNotes(
+      (existingNotes) => existingNotes.map(
+        (note) => {
+          if(note.uniqueId === noteToUpdate.uniqueId) {
+            console.log("found");
+            return new Note(note.title, newNoteContent, note.uniqueId);
+          }
+          else {
+            return note;
+          }
+
+        }
+      )
+    );
+  };
 
   // Sets the note at index to be the active note, if index is valid
   const setNoteAtIndexToActive = (index) => {
@@ -43,6 +70,7 @@ export default function App() {
               notes={notes} 
               setNoteAtIndexToActive={setNoteAtIndexToActive} 
               activeNoteIndex={activeNoteIndex}
+              addNote = {addNote}
             />
         </div>
         
@@ -50,6 +78,7 @@ export default function App() {
         <div className="editorContainer">
           <NoteEditor 
             activeNote={activeNote}
+            updateNoteContent={updateNoteContent}
           />
         </div>
       </div>

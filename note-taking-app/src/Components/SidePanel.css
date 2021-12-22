@@ -28,7 +28,37 @@
     cursor: pointer;
 }
 
-.activeNote {
+.activeNote .noteTitle {
     font-weight: bold;
 }
 
+.inactiveNote .noteTitle {
+    font-weight: normal;
+}
+
+.noteTitle {
+    margin: 5px 0 0 5px;
+}
+
+.noteContent {
+    margin: 0 0 0 15px;
+    font-weight: lighter;
+}
+
+.contextMenu {
+    font-size: 100%;
+    padding: 5px;
+    width: 150px;
+    height: auto;
+    margin: 0;
+    position: absolute;
+    list-style: none;
+    background-color: #243B53;
+    border: 1px solid white;
+    border-radius: 2px;
+}
+
+.contextMenuText {
+    margin-left: 10px;
+    cursor: pointer;
+}
