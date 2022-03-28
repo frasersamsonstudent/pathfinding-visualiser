@@ -1,0 +1,47 @@
+:root {
+    --background-color: #000814;
+    --empty-cell-color: #00377e;
+    --wall-cell-color: #191d32;
+    --start-cell-color: lime;
+    --end-cell-color: red;
+    --cell-outline-color: white;
+}
+
+
+.gridContainer {
+    display: grid;
+    width: 90vw;
+    height: 90vh;
+    margin: auto;
+}
+
+.pathfindingVisualiser {
+        /* Prevent selecting text and dragging */
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+}
+
+.gridItem {
+    padding: 5px;
+    border: 1px solid var(--cell-outline-color);
+}
+
+/* Properties for cells */
+.emptyCell {
+    background-color: var(--empty-cell-color);
+}
+
+.wallCell {
+    background-color: var(--wall-cell-color);
+}
+
+.startCell {
+    background-color: var(--start-cell-color);
+}
+
+.endCell {
+    background-color: var(--end-cell-color);
+}
