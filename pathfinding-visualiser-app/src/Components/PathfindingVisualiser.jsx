@@ -3,24 +3,16 @@ import {useState, useEffect, useRef} from 'react';
 import './PathfindingVisualiser.css';
 import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
-
-
-
-
+import Cell from '../Objects/Cell.js';
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
     const [gridDimensions, setGridDimensions] = useState([]);
-    const [startPoint, setStartPoint] = useState([0, 0]);
+    const [startPoint, setStartPoint] = useState(new Cell(0, 0, ));
     const [endPoint, setEndPoint] = useState([6, 3]);
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [isMouseInGrid, setIsMouseInGrid] = useState(false);
 
-    /*
-    800 high
-    20 px each
-    40
-    */
     useEffect(() => {
         setGridDimensions([Math.floor(window.innerWidth/80), Math.floor(window.innerWidth/80)]);
     }, []);
@@ -42,40 +34,41 @@ const PathfindingVisualiser = React.memo(() => {
         [gridDimensions]
     );
 
-
     const createGrid = () => {
         const newGrid = [];
 
-        for(let i=0;i<gridDimensions[1];i++) {
+        for(let row=0;row<gridDimensions[1];row++) {
             newGrid.push([]);
-            for(let j=0;j<gridDimensions[0];j++) {
-                newGrid[i][j] = CellTypes.empty;
+            for(let col=0;col<gridDimensions[0];col++) {
+                newGrid[row].push(new Cell(col, row, CellTypes.empty));
             }
         }
 
-        if(startPoint[0] >= 0 && startPoint[0] < gridDimensions[0]) 
-            newGrid[startPoint[1]][startPoint[0]] = CellTypes.start;
-        if(endPoint[0] >= 0 && endPoint[0] < gridDimensions[0])
-            newGrid[endPoint[1]][endPoint[0]] = CellTypes.end;
+        if(startPoint.col >= 0 && startPoint.col < gridDimensions[0] && startPoint.row >= 0 && startPoint.row < gridDimensions[1]) {
+            newGrid[startPoint.row][startPoint.col].value = CellTypes.start;
+        };
+        if(endPoint.col >= 0 && endPoint.col < gridDimensions[0] && endPoint.row >= 0 && endPoint.row < gridDimensions[1]) {
+            newGrid[endPoint.row][endPoint.col].value = CellTypes.end;
+        };
 
         return newGrid
     };
 
     const handleGridItemClicked = (col, row) => {
-        if(grid[row][col] === CellTypes.wall) {
+        if(grid[row][col].value === CellTypes.wall) {
             updateGridCellAtIndex(col, row, CellTypes.empty);
         }
-        else if(grid[row][col] === CellTypes.empty) {
+        else if(grid[row][col].value === CellTypes.empty) {
             updateGridCellAtIndex(col, row, CellTypes.wall);
         }
     }
 
     const handleMouseOver = (x, y) => {
         if(isMouseDown) {
-            if(grid[y][x] === CellTypes.empty) {
+            if(grid[y][x].value === CellTypes.empty) {
                 updateGridCellAtIndex(x, y, CellTypes.wall);
             }
-            else if(grid[y][x] === CellTypes.wall) {
+            else if(grid[y][x].value === CellTypes.wall) {
                 updateGridCellAtIndex(x, y, CellTypes.empty);
             };
         };
@@ -87,9 +80,12 @@ const PathfindingVisualiser = React.memo(() => {
                 if(rowIndex !== y) {
                     return row.map(cell => cell)
                 }
-                else {
-                    return row.map((cell, colIndex) => {return colIndex === x ? newValue : cell})
-                }
+                return row.map((cell, colIndex) => {
+                    if(colIndex === x) {
+                        cell.value = newValue;
+                    }
+                    return cell;
+                });
             })
         );
     }
@@ -101,16 +97,17 @@ const PathfindingVisualiser = React.memo(() => {
             <div 
                 draggable='false' 
                 className="gridContainer" 
-                ondragStart='false'
-                style={{'grid-template-columns': `repeat(${gridDimensions[0]}, 1fr)`, 'grid-template-rows': `repeat(${gridDimensions[1]}, 1fr)`}}>
+                
+                style={{'gridTemplateColumns': `repeat(${gridDimensions[0]}, 1fr)`, 'gridTemplateRows': `repeat(${gridDimensions[1]}, 1fr)`}}>
                 {
                     grid.map(
                         (row, rowIndex) => {
-                            return row.map((cellValue, columnIndex) => {
+                            return row.map((cell, columnIndex) => {
                                 return <GridCell 
+                                    key = {[columnIndex, rowIndex]}
                                     columnIndex={columnIndex} 
                                     rowIndex={rowIndex} 
-                                    cellValue={cellValue} 
+                                    cellValue={cell.value} 
                                     handleMouseOver={() => handleMouseOver(columnIndex, rowIndex)} 
                                     handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
                                 />
