@@ -1,70 +1,46 @@
 import CellTypes from "../CellTypes";
 
-const isOutOfBounds = (grid, cell) => {
-    const [row, col] = cell;
-    
+const isInBounds = (grid, col, row) => {    
     if(row < 0 || row  >= grid.length || col < 0 || col >= grid[0].length) {
-        return true;
+        return false;
     }
-    return false;
+    return true;
+};
+
+const isEmpty = cell => {
+    return cell.value !== CellTypes.wall;
 }
-const getNeighbours = (grid, gridDimensions, cellPosition) => {
-    let neighbours = []
 
-    // Create array of possible neighbours
-    for(let i=-1;i<=1;i++) {
-        for(let j=-1;j<=1;j++) {
-            if(!(i===0 && j===0)) {
-                neighbours.push([cellPosition[0]+i, cellPosition[1]+j]);
-            }
+const getNeighbours = (grid, cell) => {
+    const neighbourNodes = [];
+    const col = cell.col, row = cell.row;
+    const potentialNeighbourPositions = [[col, row-1], [col, row+1], [col-1, row], [col+1, row]];
+    
+    // Add valid nodes to neighbourNodes
+    potentialNeighbourPositions.forEach(([neighbourCol, neighbourRow]) => {
+        if(isInBounds(grid, neighbourCol, neighbourRow) && isEmpty(grid[neighbourRow][neighbourCol])) {
+            neighbourNodes.push(grid[neighbourRow][neighbourCol]);
         }
-    };
+    })
 
-    // Filter out invalid neighbours
-    neighbours = neighbours.filter(neighbour => {
-        if(neighbour === undefined) {
-            return false;
-        }
-        if(isOutOfBounds(grid, neighbour));
-        
-        
-        return true;
-    });
-
-    return neighbours;
+    return neighbourNodes;
 };
 
 const getPathFromExplored = (explored, goal) => {
     if(goal !== undefined) {
-        if(explored.get(goal.toString()) === undefined) {
+        if(explored.get(goal.getKey()) === undefined) {
             return;
     }
     
-      let curr = goal.toString();
+      let curr = goal.getKey();
       const path = [];
       while(curr !== undefined) {
-          path.push(curr);
-          curr = explored.get(curr.toString());
+          path.push(curr.split(','));
+          curr = explored.get(curr)
       }
   
       return path;
     }
 };
 
-const outputGrid = (grid, path) => {
-    const pathDraw = [];
-    for(let x=0;x < grid.length;x++) {
-        pathDraw.push([])
-        for(let y=0;y < grid[0].length;y++) {
-            pathDraw[x].push(path.includes([x, y].toString()) ? 'x' : '0');
-      }
-    }
-    
-    console.log(pathDraw);
-};
-  
-const outputNodesInExplored = (explored) => {
-    console.log(...explored.entries());
-}
-
-export {getNeighbours, getPathFromExplored, outputNodesInExplored, outputGrid };
+export {getNeighbours, getPathFromExplored };

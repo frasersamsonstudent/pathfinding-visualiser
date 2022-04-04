@@ -4,12 +4,15 @@ import './PathfindingVisualiser.css';
 import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
 import Cell from '../Objects/Cell.js';
+import bfs from '../PathfindingAlgorithms/BFS';
+import { getNeighbours, getPathFromExplored } from '../PathfindingAlgorithms/util';
+import { getBlinkAnimation, getGrowAnimation } from '../Animations/PathAnimation';
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
     const [gridDimensions, setGridDimensions] = useState([]);
-    const [startPoint, setStartPoint] = useState(new Cell(0, 0, ));
-    const [endPoint, setEndPoint] = useState([6, 3]);
+    const [startNode, setStartNode] = useState(new Cell(0, 0, CellTypes.start));
+    const [endNode, setEndNode] = useState(new Cell(3, 3, CellTypes.end));
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [isMouseInGrid, setIsMouseInGrid] = useState(false);
 
@@ -40,15 +43,17 @@ const PathfindingVisualiser = React.memo(() => {
         for(let row=0;row<gridDimensions[1];row++) {
             newGrid.push([]);
             for(let col=0;col<gridDimensions[0];col++) {
-                newGrid[row].push(new Cell(col, row, CellTypes.empty));
+                let cell = new Cell(col, row, CellTypes.empty);
+                newGrid[row].push(cell);
             }
         }
 
-        if(startPoint.col >= 0 && startPoint.col < gridDimensions[0] && startPoint.row >= 0 && startPoint.row < gridDimensions[1]) {
-            newGrid[startPoint.row][startPoint.col].value = CellTypes.start;
+        // Set start and end nodes in grid
+        if(startNode.col >= 0 && startNode.col < gridDimensions[0] && startNode.row >= 0 && startNode.row < gridDimensions[1]) {
+            newGrid[startNode.row][startNode.col].value = CellTypes.start;
         };
-        if(endPoint.col >= 0 && endPoint.col < gridDimensions[0] && endPoint.row >= 0 && endPoint.row < gridDimensions[1]) {
-            newGrid[endPoint.row][endPoint.col].value = CellTypes.end;
+        if(endNode.col >= 0 && endNode.col < gridDimensions[0] && endNode.row >= 0 && endNode.row < gridDimensions[1]) {
+            newGrid[endNode.row][endNode.col].value = CellTypes.end;
         };
 
         return newGrid
@@ -90,10 +95,29 @@ const PathfindingVisualiser = React.memo(() => {
         );
     }
 
+    const markNodesAsPartOfPath = (pathPositions) => {
+        pathPositions.reverse();
+        const newGrid = [...grid];
+
+        pathPositions.forEach(([col, row], indexInPath) => {
+            newGrid[row][col].isInPath = true;
+            newGrid[row][col].animation = getGrowAnimation(0.5, 0.15 * indexInPath);
+        });
+
+        setGrid(newGrid);
+    };
+
     return (
         <div className='pathfindingVisualiser'>
             <div className='header'><h1>Header</h1></div>
-                <button>BFS</button>
+                <button 
+                    onClick={() => {
+                        const explored = bfs(grid, startNode, endNode);
+                        const path = getPathFromExplored(explored, endNode);
+                        markNodesAsPartOfPath(path);
+                }}>
+                    BFS
+                </button>
             <div 
                 draggable='false' 
                 className="gridContainer" 
@@ -110,13 +134,11 @@ const PathfindingVisualiser = React.memo(() => {
                                     cellValue={cell.value} 
                                     handleMouseOver={() => handleMouseOver(columnIndex, rowIndex)} 
                                     handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
+                                    isInPath = {cell.isInPath}
+                                    animation = {cell.animation}
                                 />
                             })
-
-                            
                         }
-
-
                     )
                 }
             </div>
@@ -124,7 +146,6 @@ const PathfindingVisualiser = React.memo(() => {
     )
     
 }, (prev, curr) => {
-    
     return true;
 });
 

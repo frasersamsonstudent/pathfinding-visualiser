@@ -3,6 +3,11 @@ class Cell {
         this.value = value;
         this.col = col;
         this.row = row;
+        this.isInPath = false;
+    }
+
+    getKey() {
+        return [this.col,this.row].toString();
     }
 }
 

@@ -5,8 +5,8 @@
     --start-cell-color: lime;
     --end-cell-color: red;
     --cell-outline-color: white;
+    --path-cell-color: turquoise;
 }
-
 
 .gridContainer {
     display: grid;
@@ -29,6 +29,7 @@
     border: 1px solid var(--cell-outline-color);
 }
 
+
 /* Properties for cells */
 .emptyCell {
     background-color: var(--empty-cell-color);
@@ -38,10 +39,32 @@
     background-color: var(--wall-cell-color);
 }
 
+.path {
+    background-color: var(--path-cell-color);
+    
+}
+
 .startCell {
     background-color: var(--start-cell-color);
 }
 
 .endCell {
     background-color: var(--end-cell-color);
+}
+
+
+/* Path animations */
+@keyframes blink {
+    50% {
+      opacity: 0;
+    }
+} 
+
+@keyframes grow {
+    from {
+        transform: scale(0.2);
+      }
+      to {
+        transform: scale(1);
+      }
 }
