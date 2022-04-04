@@ -104,6 +104,9 @@ const PathfindingVisualiser = React.memo(() => {
             newGrid[row][col].animation = getGrowAnimation(0.5, 0.15 * indexInPath);
         });
 
+        // Remove changes to start and end node
+        
+
         setGrid(newGrid);
     };
 
