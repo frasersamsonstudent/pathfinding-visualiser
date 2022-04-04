@@ -1,30 +1,30 @@
 import { getNeighbours } from "./util";
 
-export default (grid, gridDimensions, startPos, goal) => {
+const bfs = (grid, gridDimensions, startPos, goal) => {
     const queue = [];
     const explored = new Map();
     let prev = undefined, curr = undefined; 
+    explored.set(startPos.toString(), undefined);
 
-    queue.push(...getNeighbours(grid, gridDimensions, startPos));
-    while(queue) {
+    queue.push(startPos);
+    while(queue.length !== 0) {
         prev = curr;
         curr = queue.shift();
 
-        // Add current node to explored
-        explored.set(curr.toString(), prev === undefined ? undefined : prev.toString());
-        console.log(prev === undefined ? undefined : prev.toString());
-
-        if(curr[0] === goal[0] && curr[1] === goal[1]) {
+        if(curr === goal) {
             return explored;
         }
 
         // Add unvisited neighbours to queue 
         for(let neighbour of getNeighbours(grid, gridDimensions, curr)) {
-            if(explored.get(neighbour.toString())) {
-                console.log(neighbour);
-                queue.push(neighbour);
+            if(!explored.has(neighbour.toString())) {
+              queue.push(neighbour);
+              explored.set(neighbour.toString(), curr.toString());
             };
         }
-       
     }
+
+    return undefined;
 }
+
+export default bfs;
