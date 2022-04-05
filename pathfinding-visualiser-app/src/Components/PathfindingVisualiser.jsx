@@ -14,7 +14,7 @@ const PathfindingVisualiser = React.memo(() => {
     const [startNode, setStartNode] = useState(new Cell(0, 0, CellTypes.start));
     const [endNode, setEndNode] = useState(new Cell(1, 1, CellTypes.end));
     const [isMouseDown, setIsMouseDown] = useState(false);
-    const [movingNodeType, setMovingNodeType] = useState(undefined);
+    const [placingNodeType, setPlacingNodeType] = useState(undefined);
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
@@ -44,7 +44,7 @@ const PathfindingVisualiser = React.memo(() => {
     };
     const handleMouseUpWindowEvent = () => {
         setIsMouseDown(false);
-        setMovingNodeType(undefined);
+        setPlacingNodeType(undefined);
     }
 
     const createGrid = () => {
@@ -78,45 +78,62 @@ const PathfindingVisualiser = React.memo(() => {
         }
     }
 
-    const handleMouseOver = (x, y) => {
+    /** Used to handle the event of mouse being over cell
+     * 
+     * @param {int} col column of cell mouse is in 
+     * @param {int} row row of cell mouse is in
+     * 
+     */
+    const handleMouseOverCell = (col, row) => {
         if(isMouseDown) {
-            // Check if currently moving a node
-            if(movingNodeType !== undefined) {
-                if(movingNodeType === CellTypes.start) {
-                    moveNode(startNode, x, y, setStartNode);
-                }
-                else if(movingNodeType === CellTypes.end) {
-                    moveNode(endNode, x, y, setEndNode);
-                };
-            }
-
-            else {
-                const cellType = grid[y][x].value;
-
-                if(cellType === CellTypes.empty) {
-                    updateGridCellAtIndex(x, y, CellTypes.wall);
-                }
-                else if(cellType === CellTypes.wall) {
-                    updateGridCellAtIndex(x, y, CellTypes.empty);
-                }
-                else if(cellType === CellTypes.start) {
-                    setMovingNodeType(CellTypes.startNode);
-                }
-                else if(cellType === CellTypes.end) {
-                    setMovingNodeType(CellTypes.endNode);
-                };
-            }     
+            handleMouseOverAndDownInCell(col, row);
         };
     };
+
+    /** Handles the event of mouse being held down whilst in a cell
+     * Will either replace an empty node with a wall, a wall with an empty node, or begin placing start/end node
+     * @param {*} col 
+     * @param {*} row 
+     */
+    const handleMouseOverAndDownInCell = (col, row) => {
+        const isMovingStartOrEndNode = placingNodeType !== undefined;
+
+        if(isMovingStartOrEndNode) {
+            if(placingNodeType === CellTypes.start) {
+                moveNode(startNode, col, row, setStartNode);
+            }
+            else if(placingNodeType === CellTypes.end) {
+                moveNode(endNode, col, row, setEndNode);
+            };
+            
+        }
+
+        else { 
+            const cellTypeAtPos = grid[row][col].value;
+
+            if(cellTypeAtPos === CellTypes.empty) {
+                updateGridCellAtIndex(col, row, CellTypes.wall);
+            }
+            else if(cellTypeAtPos === CellTypes.wall) {
+                updateGridCellAtIndex(col, row, CellTypes.empty);
+            }
+            else if(cellTypeAtPos === CellTypes.start) {
+                setPlacingNodeType(CellTypes.startNode);
+            }
+            else if(cellTypeAtPos === CellTypes.end) {
+                setPlacingNodeType(CellTypes.endNode);
+            };
+        };
+    }
 
     const handleMouseDownOnCell = (col, row) => {
         const cellTypeAtPos = grid[row][col].value;
 
         if(cellTypeAtPos === CellTypes.start) {
-            setMovingNodeType(CellTypes.start);
+            setPlacingNodeType(CellTypes.start);
         }
         else if(cellTypeAtPos === CellTypes.end) {
-            setMovingNodeType(CellTypes.end);
+            setPlacingNodeType(CellTypes.end);
         }
     }
 
@@ -213,7 +230,7 @@ const PathfindingVisualiser = React.memo(() => {
                                     columnIndex={columnIndex} 
                                     rowIndex={rowIndex} 
                                     cellValue={cell.value} 
-                                    handleMouseOver={() => handleMouseOver(columnIndex, rowIndex)} 
+                                    handleMouseOver={() => handleMouseOverCell(columnIndex, rowIndex)} 
                                     handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
                                     handleMouseDown = {() => handleMouseDownOnCell(columnIndex, rowIndex)}
                                     isInPath = {cell.isInPath}
