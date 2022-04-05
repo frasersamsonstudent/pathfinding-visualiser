@@ -5,7 +5,7 @@ import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
 import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
-import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd } from '../PathfindingAlgorithms/util';
+import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid } from '../PathfindingAlgorithms/util';
 import { getBlinkAnimation, getGrowAnimation } from '../Animations/PathAnimation';
 
 const PathfindingVisualiser = React.memo(() => {
@@ -17,7 +17,8 @@ const PathfindingVisualiser = React.memo(() => {
     const [movingNodeType, setMovingNodeType] = useState(undefined);
 
     useEffect(() => {
-        setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
+        //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
+        setGridDimensions([10, 10])
     }, []);
 
     useEffect(() => {
@@ -91,7 +92,6 @@ const PathfindingVisualiser = React.memo(() => {
 
             else {
                 const cellType = grid[y][x].value;
-                console.log("CELL TYPE: ", cellType);
 
                 if(cellType === CellTypes.empty) {
                     updateGridCellAtIndex(x, y, CellTypes.wall);
@@ -149,7 +149,7 @@ const PathfindingVisualiser = React.memo(() => {
     };
 
     const moveNode = (nodeToMove, newCol, newRow) => {
-        console.log("node moving: ", nodeToMove)
+        console.log(nodeToMove, newCol, newRow);
         if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
             if(isInBounds(grid, newCol, newRow) && !isNodeStartOrEnd(grid, newCol, newRow)) {
                 const newGrid = [...grid];
@@ -166,6 +166,8 @@ const PathfindingVisualiser = React.memo(() => {
         }
     };
 
+    printGrid(grid);
+    console.log(startNode, endNode);
     return (
         <div className='pathfindingVisualiser'>
             <div className='header'><h1>Header</h1></div>
@@ -185,6 +187,17 @@ const PathfindingVisualiser = React.memo(() => {
                 >
                     Move start to (3, 3)
                 </button>
+
+                <button
+                    onClick={() => {
+                        console.log(isNodeStartOrEnd(grid, 2, 2));
+                        console.log(grid);
+                    }}
+                >
+                    Test end at (2, 2)
+                </button>
+
+                
 
             <div 
                 draggable='false' 

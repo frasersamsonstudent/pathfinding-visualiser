@@ -8,7 +8,8 @@ const isInBounds = (grid, col, row) => {
 };
 
 const isNodeStartOrEnd = (grid, checkingCol, checkingRow) => {
-    if(grid[checkingRow][checkingCol].value === CellTypes.start && grid[checkingRow][checkingCol] === CellTypes.end) {
+    const cellType = grid[checkingRow][checkingCol].value;
+    if(cellType === CellTypes.start || cellType === CellTypes.end) {
         return true;
     }
     return false;
@@ -50,4 +51,14 @@ const getPathFromExplored = (explored, goal) => {
     }
 };
 
-export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd};
+const printGrid = grid => {
+    const outputRows = [];
+    grid.forEach((row, rowIndex) => {
+        outputRows.push('');
+
+        row.forEach(cell => {outputRows[rowIndex] += cell.value.toString()})
+    });
+    console.log(outputRows);
+}
+
+export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid};
