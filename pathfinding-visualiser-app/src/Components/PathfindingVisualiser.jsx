@@ -3,26 +3,26 @@ import {useState, useEffect, useRef} from 'react';
 import './PathfindingVisualiser.css';
 import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
-import Cell from '../Objects/Cell.js';
+import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
-import { getNeighbours, getPathFromExplored } from '../PathfindingAlgorithms/util';
+import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd } from '../PathfindingAlgorithms/util';
 import { getBlinkAnimation, getGrowAnimation } from '../Animations/PathAnimation';
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
     const [gridDimensions, setGridDimensions] = useState([]);
     const [startNode, setStartNode] = useState(new Cell(0, 0, CellTypes.start));
-    const [endNode, setEndNode] = useState(new Cell(3, 3, CellTypes.end));
+    const [endNode, setEndNode] = useState(new Cell(1, 1, CellTypes.end));
     const [isMouseDown, setIsMouseDown] = useState(false);
-    const [isMouseInGrid, setIsMouseInGrid] = useState(false);
+    const [movingNodeType, setMovingNodeType] = useState(undefined);
 
     useEffect(() => {
-        setGridDimensions([Math.floor(window.innerWidth/80), Math.floor(window.innerWidth/80)]);
+        setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
     }, []);
 
     useEffect(() => {
-        window.addEventListener('mousedown', e => setIsMouseDown(true));
-        window.addEventListener('mouseup', e => setIsMouseDown(false));
+        window.addEventListener('mousedown', e => handleMouseDownWindowEvent());
+        window.addEventListener('mouseup', e => handleMouseUpWindowEvent());
         
         return () => {
             window.removeEventListener('mousedown', () => setIsMouseDown(true));
@@ -36,6 +36,15 @@ const PathfindingVisualiser = React.memo(() => {
         },
         [gridDimensions]
     );
+
+    // Functions for handling the events in the window
+    const handleMouseDownWindowEvent = () => {
+        setIsMouseDown(true);
+    };
+    const handleMouseUpWindowEvent = () => {
+        setIsMouseDown(false);
+        setMovingNodeType(undefined);
+    }
 
     const createGrid = () => {
         const newGrid = [];
@@ -70,14 +79,46 @@ const PathfindingVisualiser = React.memo(() => {
 
     const handleMouseOver = (x, y) => {
         if(isMouseDown) {
-            if(grid[y][x].value === CellTypes.empty) {
-                updateGridCellAtIndex(x, y, CellTypes.wall);
+            // Check if currently moving a node
+            if(movingNodeType !== undefined) {
+                if(movingNodeType === CellTypes.start) {
+                    moveNode(startNode, x, y, setStartNode);
+                }
+                else if(movingNodeType === CellTypes.end) {
+                    moveNode(endNode, x, y, setEndNode);
+                };
             }
-            else if(grid[y][x].value === CellTypes.wall) {
-                updateGridCellAtIndex(x, y, CellTypes.empty);
-            };
+
+            else {
+                const cellType = grid[y][x].value;
+                console.log("CELL TYPE: ", cellType);
+
+                if(cellType === CellTypes.empty) {
+                    updateGridCellAtIndex(x, y, CellTypes.wall);
+                }
+                else if(cellType === CellTypes.wall) {
+                    updateGridCellAtIndex(x, y, CellTypes.empty);
+                }
+                else if(cellType === CellTypes.start) {
+                    setMovingNodeType(CellTypes.startNode);
+                }
+                else if(cellType === CellTypes.end) {
+                    setMovingNodeType(CellTypes.endNode);
+                };
+            }     
         };
     };
+
+    const handleMouseDownOnCell = (col, row) => {
+        const cellTypeAtPos = grid[row][col].value;
+
+        if(cellTypeAtPos === CellTypes.start) {
+            setMovingNodeType(CellTypes.start);
+        }
+        else if(cellTypeAtPos === CellTypes.end) {
+            setMovingNodeType(CellTypes.end);
+        }
+    }
 
     const updateGridCellAtIndex = (x, y, newValue) => {
         setGrid(
@@ -104,10 +145,25 @@ const PathfindingVisualiser = React.memo(() => {
             newGrid[row][col].animation = getGrowAnimation(0.5, 0.15 * indexInPath);
         });
 
-        // Remove changes to start and end node
-        
-
         setGrid(newGrid);
+    };
+
+    const moveNode = (nodeToMove, newCol, newRow) => {
+        console.log("node moving: ", nodeToMove)
+        if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
+            if(isInBounds(grid, newCol, newRow) && !isNodeStartOrEnd(grid, newCol, newRow)) {
+                const newGrid = [...grid];
+
+                newGrid[nodeToMove.row][nodeToMove.col] = copyCellAndSetNewValue(newGrid[nodeToMove.row][nodeToMove.col], CellTypes.empty);
+                
+                // Place node at new position and update position values
+                newGrid[newRow][newCol] = nodeToMove;
+                nodeToMove.col = newCol;
+                nodeToMove.row = newRow;
+
+                setGrid(newGrid);
+            }
+        }
     };
 
     return (
@@ -121,6 +177,15 @@ const PathfindingVisualiser = React.memo(() => {
                 }}>
                     BFS
                 </button>
+                <button
+                    onClick={() => {
+                        moveNode(startNode, 3, 3, setStartNode);
+                        console.log(grid);
+                    }}
+                >
+                    Move start to (3, 3)
+                </button>
+
             <div 
                 draggable='false' 
                 className="gridContainer" 
@@ -137,6 +202,7 @@ const PathfindingVisualiser = React.memo(() => {
                                     cellValue={cell.value} 
                                     handleMouseOver={() => handleMouseOver(columnIndex, rowIndex)} 
                                     handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
+                                    handleMouseDown = {() => handleMouseDownOnCell(columnIndex, rowIndex)}
                                     isInPath = {cell.isInPath}
                                     animation = {cell.animation}
                                 />

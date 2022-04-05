@@ -11,4 +11,14 @@ class Cell {
     }
 }
 
-export default Cell;
+const copyCell = cell => {
+    return new Cell(cell.col, cell.row, cell.value);
+}
+
+const copyCellAndSetNewValue = (cell, newValue) => {
+    const cellCopy = copyCell(cell);
+    cellCopy.value = newValue;
+    return cellCopy;
+};
+
+export {Cell, copyCell, copyCellAndSetNewValue};

@@ -7,6 +7,13 @@ const isInBounds = (grid, col, row) => {
     return true;
 };
 
+const isNodeStartOrEnd = (grid, checkingCol, checkingRow) => {
+    if(grid[checkingRow][checkingCol].value === CellTypes.start && grid[checkingRow][checkingCol] === CellTypes.end) {
+        return true;
+    }
+    return false;
+};
+
 const isEmpty = cell => {
     return cell.value !== CellTypes.wall;
 }
@@ -43,4 +50,4 @@ const getPathFromExplored = (explored, goal) => {
     }
 };
 
-export {getNeighbours, getPathFromExplored };
+export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd};

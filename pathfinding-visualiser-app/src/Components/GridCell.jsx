@@ -4,19 +4,19 @@ import CellTypes from '../CellTypes';
 
 
 const Cell = (props) => {
-    console.log(props.animation);
-    // Check whether cell is part of the current path
     const pathClass = props.isInPath ? 'path ' : '';
     const cellClass = `${Object.keys(CellTypes)[props.cellValue]}Cell`;
-    const animation = props.animation !== undefined ? props.animation : '';
+    const shouldApplyAnimation = props.cellValue === CellTypes.empty && props.animation !== undefined;
+    const animationStyle = shouldApplyAnimation ? props.animation : '';
 
     return (
         <span    
-            style = {{animation: animation}}
+            style = {{animation: animationStyle}}
             draggable="false" 
             className={'gridItem ' + cellClass + ' ' + pathClass}                 
-            onMouseDown = {() => props.handleGridItemClicked()}       
+            onClick = {() => props.handleGridItemClicked()}       
             onMouseOver = {() => props.handleMouseOver()}    
+            onMouseDown = {() => props.handleMouseDown()}
         />  
     );
 }
