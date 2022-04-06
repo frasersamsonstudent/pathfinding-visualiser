@@ -7,7 +7,7 @@ const bfs = (grid, startNode, goalNode) => {
     explored.set(startNode.getKey(), undefined);
     let curr = undefined, prev = undefined;
 
-    while (explored.size > 0) {
+    while (queue.length > 0) {
         prev = curr;
         curr = queue.shift();
 
