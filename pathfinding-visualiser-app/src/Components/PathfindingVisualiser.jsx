@@ -6,7 +6,7 @@ import GridCell from './GridCell';
 import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
 import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid } from '../PathfindingAlgorithms/util';
-import { getBlinkAnimation, getGrowAnimation } from '../Animations/PathAnimation';
+import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimation } from '../Animations/PathAnimation';
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
@@ -15,6 +15,7 @@ const PathfindingVisualiser = React.memo(() => {
     const [endNode, setEndNode] = useState(new Cell(1, 1, CellTypes.end));
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [placingNodeType, setPlacingNodeType] = useState(undefined);
+    const animationSpeed = 0.05;
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
@@ -165,6 +166,22 @@ const PathfindingVisualiser = React.memo(() => {
         setGrid(newGrid);
     };
 
+    const animateGrid = (explored, path) => {
+        let index = 0
+        explored.forEach(e => {
+            if(e !== undefined) {
+                const col = e.split(',')[0], row = e.split(',')[1];
+                console.log(col, row);
+                grid[row][col].animation = getGrowWithGradientAnimation(1, index*animationSpeed);
+            }
+
+            index += 1;
+        });
+
+        // After other cells will have finished animation, draw path
+        setTimeout(((index * animationSpeed) * 1000) + 2000, markNodesAsPartOfPath(path));
+    }
+
     const moveNode = (nodeToMove, newCol, newRow) => {
         console.log(nodeToMove, newCol, newRow);
         if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
@@ -183,38 +200,26 @@ const PathfindingVisualiser = React.memo(() => {
         }
     };
 
-    printGrid(grid);
-    console.log(startNode, endNode);
+    const solveGrid = (solveAlgorithm) => {
+        const explored = solveAlgorithm(grid, startNode, endNode);
+
+        if(explored) {
+            const path = getPathFromExplored(explored, endNode);
+            if(path) { animateGrid(explored, path); }
+        }
+
+    };
+
     return (
         <div className='pathfindingVisualiser'>
             <div className='header'><h1>Header</h1></div>
                 <button 
                     onClick={() => {
-                        const explored = bfs(grid, startNode, endNode);
-                        const path = getPathFromExplored(explored, endNode);
-                        markNodesAsPartOfPath(path);
+                        solveGrid(bfs);
                 }}>
                     BFS
                 </button>
-                <button
-                    onClick={() => {
-                        moveNode(startNode, 3, 3, setStartNode);
-                        console.log(grid);
-                    }}
-                >
-                    Move start to (3, 3)
-                </button>
 
-                <button
-                    onClick={() => {
-                        console.log(isNodeStartOrEnd(grid, 2, 2));
-                        console.log(grid);
-                    }}
-                >
-                    Test end at (2, 2)
-                </button>
-
-                
 
             <div 
                 draggable='false' 

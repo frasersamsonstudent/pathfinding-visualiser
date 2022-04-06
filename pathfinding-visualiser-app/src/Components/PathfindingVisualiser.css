@@ -6,6 +6,8 @@
     --end-cell-color: red;
     --cell-outline-color: white;
     --path-cell-color: turquoise;
+    --initial-animation-color: purple; 
+    --mid-animation-color: orange;
 }
 
 .gridContainer {
@@ -68,3 +70,22 @@
         transform: scale(1);
         }
 }
+
+@keyframes growAndChangeColour {
+    0% {
+        background-color: var(--initial-animation-color);
+    }
+    50% {
+        background-color: var(--mid-animation-color);
+    }
+    100% {
+        background-color: none;
+    }
+    from {
+        transform: scale(0.2);
+        }
+        to {
+        transform: scale(1);
+        }
+}
+
