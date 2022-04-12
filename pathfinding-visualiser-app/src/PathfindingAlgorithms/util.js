@@ -22,7 +22,7 @@ const isEmpty = cell => {
 const getNeighbours = (grid, cell) => {
     const neighbourNodes = [];
     const col = cell.col, row = cell.row;
-    const potentialNeighbourPositions = [[col, row-1], [col, row+1], [col-1, row], [col+1, row]];
+    const potentialNeighbourPositions = [[col, row+1], [col+1, row], [col, row-1], [col-1, row]];
     
     // Add valid nodes to neighbourNodes
     potentialNeighbourPositions.forEach(([neighbourCol, neighbourRow]) => {

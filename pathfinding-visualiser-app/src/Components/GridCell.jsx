@@ -1,22 +1,21 @@
 import React from 'react';
 import { useMemo } from 'react';
 import CellTypes from '../CellTypes';
+import './GridCell.css'
 
-
-const Cell = (props) => {
-    const pathClass = props.isInPath ? 'path ' : '';
-    const cellClass = `${Object.keys(CellTypes)[props.cellValue]}Cell`;
-    const shouldApplyAnimation = (props.cellValue === CellTypes.empty || props.cellValue === CellTypes.path) && props.animation !== undefined;
-    const animationStyle = shouldApplyAnimation ? props.animation : '';
-    console.log(animationStyle);
+const Cell = ({cell, handleMouseOver, handleGridItemClicked, handleMouseDown, animation}) => {
+    const cellClass = `${Object.keys(CellTypes)[cell.value]}Cell`;
+    
     return (
         <span    
-            style = {{animation: animationStyle}}
-            draggable="false" 
-            className={'gridItem ' + cellClass + ' ' + pathClass}                 
-            onClick = {() => props.handleGridItemClicked()}       
-            onMouseOver = {() => props.handleMouseOver()}    
-            onMouseDown = {() => props.handleMouseDown()}
+            style = {
+                animation !== undefined ? {animation: animation} : {}
+            }
+            className={'gridItem ' + cellClass }        
+
+            onClick = {() => handleGridItemClicked()}       
+            onMouseOver = {() => handleMouseOver()}    
+            onMouseDown = {() => handleMouseDown()}
         />  
     );
 }

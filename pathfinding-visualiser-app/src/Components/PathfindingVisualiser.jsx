@@ -6,7 +6,7 @@ import GridCell from './GridCell';
 import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
 import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid } from '../PathfindingAlgorithms/util';
-import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimation } from '../Animations/PathAnimation';
+import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimationForEmptyCell, getGrowWithGradientAnimationForPathCell } from '../Animations/PathAnimation';
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
@@ -15,12 +15,12 @@ const PathfindingVisualiser = React.memo(() => {
     const [endNode, setEndNode] = useState(new Cell(1, 1, CellTypes.end));
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [placingNodeType, setPlacingNodeType] = useState(undefined);
-    const animationSpeed = 0.05;
+    const animationSpeed = 0.1;
     const animationDuration = 1;
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([15, 10])
+        setGridDimensions([10, 10])
     }, []);
 
     useEffect(() => {
@@ -155,37 +155,52 @@ const PathfindingVisualiser = React.memo(() => {
         );
     }
 
+    
+    /* Functions for handling animation */
+    const animateGrid = (exploredPositionsMap, path) => {
+        const exploredPositionsAsList = [...exploredPositionsMap.keys()];
+
+        setAnimationForExploredCells(exploredPositionsAsList);
+
+        // After other cells will have finished animation, draw path
+        setTimeout(() => markNodesAsPartOfPath(path), (exploredPositionsAsList.length*animationSpeed*1000) + animationDuration*1000);
+    }
+
     const markNodesAsPartOfPath = (pathPositions) => {
         pathPositions.reverse();
         const newGrid = [...grid];
 
         pathPositions.forEach(([col, row], indexInPath) => {
-            newGrid[row][col].isInPath = true;
-            newGrid[row][col].animation = getGrowAnimation(0.5, 0.15 * indexInPath);
+            if(grid[row][col] !== undefined) {
+                newGrid[row][col].animation = getGrowWithGradientAnimationForPathCell(0.5, 0.15 * indexInPath);
+            }
         });
+
+        // Remove animation from start and end nodes
+        newGrid[startNode.row][startNode.col].animation = undefined;
+        newGrid[endNode.row][endNode.col].animation = undefined;
 
         setGrid(newGrid);
     };
 
-    const animateGrid = (explored, path) => {
-        let index = 0
+    const setAnimationForExploredCells = (exploredPositionsAsList) => {
         const newGrid = [...grid];
-        explored.forEach(e => {
+
+        exploredPositionsAsList.forEach((e, index) => {
             if(e !== undefined) {
                 const col = e.split(',')[0], row = e.split(',')[1];
-                newGrid[row][col].animation = getGrowWithGradientAnimation(animationDuration, index*animationSpeed, grid[row][col]);
+
+                if(!isNodeStartOrEnd(grid, col, row)) {
+                    newGrid[row][col].animation = getGrowWithGradientAnimationForEmptyCell(animationDuration, animationSpeed * index);
+                };
             }
-
-            index += 1;
         });
-        setGrid(newGrid);
 
-        // After other cells will have finished animation, draw path
-        setTimeout(() => markNodesAsPartOfPath(path), (index*animationSpeed*1000) + animationDuration*1000);
+        setGrid(newGrid);
     }
 
+
     const moveNode = (nodeToMove, newCol, newRow) => {
-        console.log(nodeToMove, newCol, newRow);
         if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
             if(isInBounds(grid, newCol, newRow) && !isNodeStartOrEnd(grid, newCol, newRow)) {
                 const newGrid = [...grid];
@@ -203,11 +218,11 @@ const PathfindingVisualiser = React.memo(() => {
     };
 
     const solveGrid = (solveAlgorithm) => {
-        const explored = solveAlgorithm(grid, startNode, endNode);
+        const exploredPositionsMap = solveAlgorithm(grid, startNode, endNode);
 
-        if(explored) {
-            const path = getPathFromExplored(explored, endNode);
-            if(path) { animateGrid(explored, path); }
+        if(exploredPositionsMap) {
+            const path = getPathFromExplored(exploredPositionsMap, endNode);
+            if(path) { animateGrid(exploredPositionsMap, path); }
         }
     };
 
@@ -216,10 +231,8 @@ const PathfindingVisualiser = React.memo(() => {
      */
      const resetGrid = () => {
         const newGrid = [...grid];
-        console.log(newGrid);
         for(let i=0, rowCount = newGrid.length;i<rowCount;i++) {
             for(let j=0, colCount = newGrid[0].length;j<colCount;j++) {
-                console.log(j, i);
                 newGrid[i][j].value = CellTypes.empty;
                 newGrid[i][j].isInPath = false;
                 newGrid[i][j].animation = undefined;
@@ -248,6 +261,15 @@ const PathfindingVisualiser = React.memo(() => {
                     reset
                 </button>
 
+                <button 
+                    onClick = {() => {
+                        const neighbours = getNeighbours(grid, grid[2][2]);
+                        console.log(neighbours);
+                    }}
+                >
+                    test neighbours    
+                </button>
+
 
             <div 
                 draggable='false' 
@@ -258,16 +280,12 @@ const PathfindingVisualiser = React.memo(() => {
                     grid.map(
                         (row, rowIndex) => {
                             return row.map((cell, columnIndex) => {
-                                console.log(cell.inSolution);
                                 return <GridCell 
                                     key = {[columnIndex, rowIndex]}
-                                    columnIndex={columnIndex} 
-                                    rowIndex={rowIndex} 
-                                    cellValue={cell.value} 
+                                    cell = {cell}
                                     handleMouseOver={() => handleMouseOverCell(columnIndex, rowIndex)} 
                                     handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
                                     handleMouseDown = {() => handleMouseDownOnCell(columnIndex, rowIndex)}
-                                    isInPath = {cell.isInPath}
                                     animation = {cell.animation}
                                 />
                             })

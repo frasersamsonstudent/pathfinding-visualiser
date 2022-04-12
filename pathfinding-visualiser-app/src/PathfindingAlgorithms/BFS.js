@@ -2,9 +2,9 @@ import { getNeighbours } from "./util";
 
 const bfs = (grid, startNode, goalNode) => {
     const queue = [startNode];
-    const explored = new Map();
+    const exploredPositions = new Map();
     
-    explored.set(startNode.getKey(), undefined);
+    exploredPositions.set(startNode.getKey(), undefined);
     let curr = undefined, prev = undefined;
 
     while (queue.length > 0) {
@@ -12,12 +12,12 @@ const bfs = (grid, startNode, goalNode) => {
         curr = queue.shift();
 
         if(curr.col === goalNode.col && curr.row === goalNode.row) {
-            return explored;
+            return exploredPositions;
         }
         for(let neighbour of getNeighbours(grid, curr)) {
-            if(neighbour !== undefined && !explored.has(neighbour.getKey())) {
+            if(neighbour !== undefined && !exploredPositions.has(neighbour.getKey())) {
                 queue.push(neighbour);
-                explored.set(neighbour.getKey(), curr.getKey());
+                exploredPositions.set(neighbour.getKey(), curr.getKey());
             }
         }
     }

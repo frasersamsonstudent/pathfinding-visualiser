@@ -1,0 +1,76 @@
+
+/* Properties for cells */
+.emptyCell {
+    background-color: var(--empty-cell-color);
+}
+
+.wallCell {
+    background-color: var(--wall-cell-color);
+}
+
+.startCell {
+    background-color: var(--start-cell-color);
+}
+
+.endCell {
+    background-color: var(--end-cell-color);
+}
+
+.path {
+    background-color: var(--explored-cell-color);
+}
+
+/* Path animations */
+@keyframes blink {
+    50% {
+      opacity: 0;
+    }
+} 
+
+@keyframes grow {
+    from {
+        transform: scale(0.2);
+        }
+        to {
+        transform: scale(1);
+        }
+}
+
+@keyframes growAndChangeColourForEmptyCell {
+    0% {
+        background-color: var(--initial-animation-color);
+    }
+    50% {
+        background-color: var(--mid-animation-color);
+    }
+    100% {
+        background-color: var(--explored-cell-color);
+    }
+
+    from {
+        transform: scale(0.2);
+        }
+    to {
+    transform: scale(1);
+    }
+}
+
+@keyframes growAndChangeColourForPathCell {
+    0% {
+        background-color: orange
+    }
+    50% {
+        background-color: var(--mid-animation-color);
+    }
+    100% {
+        background-color: green;
+    }
+
+    from {
+        transform: scale(0.2);
+        }
+    to {
+    transform: scale(1);
+    }
+}
+

@@ -6,10 +6,10 @@
     --end-cell-color: red;
     --cell-outline-color: white;
     --path-cell-color: turquoise;
+    --explored-cell-color: purple;
 
     --initial-animation-color: yellow; 
     --mid-animation-color: orange;
-    --final-animation-color: purple;
 }
 
 .gridContainer {
@@ -32,87 +32,3 @@
     padding: 5px;
     border: 1px solid var(--cell-outline-color);
 }
-
-
-/* Properties for cells */
-.emptyCell {
-    background-color: var(--empty-cell-color);
-}
-
-.wallCell {
-    background-color: var(--wall-cell-color);
-}
-
-.path {
-    background-color: var(--path-cell-color);
-}
-
-.startCell {
-    background-color: var(--start-cell-color);
-}
-
-.endCell {
-    background-color: var(--end-cell-color);
-}
-
-.emptyCell.inSolution {
-    animation-name: growAndChangeColourForEmptyCell;
-    animation-duration: 5s;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-}
-
-/* Path animations */
-@keyframes blink {
-    50% {
-      opacity: 0;
-    }
-} 
-
-@keyframes grow {
-    from {
-        transform: scale(0.2);
-        }
-        to {
-        transform: scale(1);
-        }
-}
-
-@keyframes growAndChangeColourForEmptyCell {
-    0% {
-        background-color: var(--initial-animation-color);
-    }
-    50% {
-        background-color: var(--mid-animation-color);
-    }
-    100% {
-        background-color: var(--final-animation-color);
-    }
-
-    from {
-        transform: scale(0.2);
-        }
-    to {
-    transform: scale(1);
-    }
-}
-
-@keyframes growAndChangeColourForPathCell {
-    0% {
-        background-color: var(--initial-animation-color);
-    }
-    50% {
-        background-color: var(--mid-animation-color);
-    }
-    100% {
-        background-color: var(--path-cell-color);
-    }
-
-    from {
-        transform: scale(0.2);
-        }
-    to {
-    transform: scale(1);
-    }
-}
-
