@@ -16,10 +16,11 @@ const PathfindingVisualiser = React.memo(() => {
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [placingNodeType, setPlacingNodeType] = useState(undefined);
     const animationSpeed = 0.05;
+    const animationDuration = 1;
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([10, 10])
+        setGridDimensions([15, 10])
     }, []);
 
     useEffect(() => {
@@ -168,18 +169,19 @@ const PathfindingVisualiser = React.memo(() => {
 
     const animateGrid = (explored, path) => {
         let index = 0
+        const newGrid = [...grid];
         explored.forEach(e => {
             if(e !== undefined) {
                 const col = e.split(',')[0], row = e.split(',')[1];
-                console.log(col, row);
-                grid[row][col].animation = getGrowWithGradientAnimation(1, index*animationSpeed);
+                newGrid[row][col].animation = getGrowWithGradientAnimation(animationDuration, index*animationSpeed, grid[row][col]);
             }
 
             index += 1;
         });
+        setGrid(newGrid);
 
         // After other cells will have finished animation, draw path
-        setTimeout(((index * animationSpeed) * 1000) + 2000, markNodesAsPartOfPath(path));
+        setTimeout(() => markNodesAsPartOfPath(path), (index*animationSpeed*1000) + animationDuration*1000);
     }
 
     const moveNode = (nodeToMove, newCol, newRow) => {
@@ -207,8 +209,30 @@ const PathfindingVisualiser = React.memo(() => {
             const path = getPathFromExplored(explored, endNode);
             if(path) { animateGrid(explored, path); }
         }
-
     };
+
+    /** Clear the grid so all cells are empty
+     * 
+     */
+     const resetGrid = () => {
+        const newGrid = [...grid];
+        console.log(newGrid);
+        for(let i=0, rowCount = newGrid.length;i<rowCount;i++) {
+            for(let j=0, colCount = newGrid[0].length;j<colCount;j++) {
+                console.log(j, i);
+                newGrid[i][j].value = CellTypes.empty;
+                newGrid[i][j].isInPath = false;
+                newGrid[i][j].animation = undefined;
+                newGrid[i][j].inSolution = false;
+            }
+        }
+
+        newGrid[startNode.row][startNode.col].value = CellTypes.start;
+        newGrid[endNode.row][endNode.col].value = CellTypes.end;
+
+        setGrid(newGrid);
+    };
+
 
     return (
         <div className='pathfindingVisualiser'>
@@ -218,6 +242,10 @@ const PathfindingVisualiser = React.memo(() => {
                         solveGrid(bfs);
                 }}>
                     BFS
+                </button>
+
+                <button onClick={() => resetGrid()}>
+                    reset
                 </button>
 
 
@@ -230,6 +258,7 @@ const PathfindingVisualiser = React.memo(() => {
                     grid.map(
                         (row, rowIndex) => {
                             return row.map((cell, columnIndex) => {
+                                console.log(cell.inSolution);
                                 return <GridCell 
                                     key = {[columnIndex, rowIndex]}
                                     columnIndex={columnIndex} 

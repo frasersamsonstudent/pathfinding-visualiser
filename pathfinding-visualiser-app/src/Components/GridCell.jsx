@@ -6,9 +6,9 @@ import CellTypes from '../CellTypes';
 const Cell = (props) => {
     const pathClass = props.isInPath ? 'path ' : '';
     const cellClass = `${Object.keys(CellTypes)[props.cellValue]}Cell`;
-    const shouldApplyAnimation = props.cellValue === CellTypes.empty && props.animation !== undefined;
+    const shouldApplyAnimation = (props.cellValue === CellTypes.empty || props.cellValue === CellTypes.path) && props.animation !== undefined;
     const animationStyle = shouldApplyAnimation ? props.animation : '';
-
+    console.log(animationStyle);
     return (
         <span    
             style = {{animation: animationStyle}}

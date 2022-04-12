@@ -5,6 +5,7 @@ class Cell {
         this.row = row;
         this.isInPath = false;
         this.inSolution = false;
+        this.animation = undefined;
     }
 
     getKey() {
