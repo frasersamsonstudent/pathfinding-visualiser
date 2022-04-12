@@ -4,7 +4,7 @@ class Cell {
         this.col = col;
         this.row = row;
         this.isInPath = false;
-        this.isExplored = false;
+        this.isInExplored = false;
         this.animation = undefined;
     }
 

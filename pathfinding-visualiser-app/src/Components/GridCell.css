@@ -18,6 +18,17 @@
 
 .path {
     background-color: var(--explored-cell-color);
+    animation-name: growAndChangeColourForPathCell;
+    animation-duration: 1.0s;
+    animation-fill-mode: forwards;
+
+}
+
+.explored {
+    background-color: var(--explored-cell-color);
+    animation-name: growAndChangeColourForEmptyCell;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
 }
 
 /* Path animations */
@@ -68,7 +79,7 @@
 
     from {
         transform: scale(0.2);
-        }
+    }
     to {
     transform: scale(1);
     }

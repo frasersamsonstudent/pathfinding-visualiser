@@ -16,7 +16,7 @@ const PathfindingVisualiser = React.memo(() => {
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [placingNodeType, setPlacingNodeType] = useState(undefined);
     const animationSpeed = 0.1;
-    const animationDuration = 1;
+    const animationDuration = 0.5;
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
@@ -168,37 +168,37 @@ const PathfindingVisualiser = React.memo(() => {
 
     const markNodesAsPartOfPath = (pathPositions) => {
         pathPositions.reverse();
-        const newGrid = [...grid];
 
         pathPositions.forEach(([col, row], indexInPath) => {
-            if(grid[row][col] !== undefined) {
-                newGrid[row][col].animation = getGrowWithGradientAnimationForPathCell(0.5, 0.15 * indexInPath);
+            if(grid[row][col] !== undefined && !isNodeStartOrEnd(grid, col, row)) {                
+                setTimeout(
+                    () => {
+                        const newGrid = [...grid];
+                        newGrid[row][col].isInPath = true;
+                        setGrid(newGrid);
+                    }, 
+                    indexInPath * animationSpeed * 1000
+                )
             }
         });
-
-        // Remove animation from start and end nodes
-        newGrid[startNode.row][startNode.col].animation = undefined;
-        newGrid[endNode.row][endNode.col].animation = undefined;
-
-        setGrid(newGrid);
     };
 
     const setAnimationForExploredCells = (exploredPositionsAsList) => {
-        const newGrid = [...grid];
-
         exploredPositionsAsList.forEach((e, index) => {
             if(e !== undefined) {
                 const col = e.split(',')[0], row = e.split(',')[1];
 
                 if(!isNodeStartOrEnd(grid, col, row)) {
-                    newGrid[row][col].animation = getGrowWithGradientAnimationForEmptyCell(animationDuration, animationSpeed * index);
+                    setTimeout(
+                        () => {
+                            const newGrid = [...grid];
+                            newGrid[row][col].isInExplored = true;
+                            setGrid(newGrid);
+                        }, animationSpeed * index * 1000);
                 };
             }
-        });
-
-        setGrid(newGrid);
+        });        
     }
-
 
     const moveNode = (nodeToMove, newCol, newRow) => {
         if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
@@ -236,7 +236,7 @@ const PathfindingVisualiser = React.memo(() => {
                 newGrid[i][j].value = CellTypes.empty;
                 newGrid[i][j].isInPath = false;
                 newGrid[i][j].animation = undefined;
-                newGrid[i][j].inSolution = false;
+                newGrid[i][j].isInExplored = false;
             }
         }
 
@@ -286,6 +286,8 @@ const PathfindingVisualiser = React.memo(() => {
                                     handleMouseOver={() => handleMouseOverCell(columnIndex, rowIndex)} 
                                     handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
                                     handleMouseDown = {() => handleMouseDownOnCell(columnIndex, rowIndex)}
+                                    isInPath = {cell.isInPath}
+                                    isInExplored = {cell.isInExplored}
                                     animation = {cell.animation}
                                 />
                             })
@@ -299,19 +301,5 @@ const PathfindingVisualiser = React.memo(() => {
 }, (prev, curr) => {
     return true;
 });
-
-const compare1dArr = (arr1, arr2) => {
-    if(arr1.length !== arr2.length) {return false;}
-    for(let i=0;i<arr1.length;i++) {
-        if(arr1[i] !== arr2[i]) {return false;}
-    }
-    return true
-}
-
-const compare2dArr = (arr1, arr2) => {
-    if(!(arr1 && arr2)) {return false;}
-    if(arr1.length !== arr2.length || arr1[0].length !== arr2[0].length) {return false;}
-    return true;
-};
 
 export default PathfindingVisualiser;

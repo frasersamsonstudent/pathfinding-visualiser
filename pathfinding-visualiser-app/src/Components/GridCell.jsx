@@ -3,16 +3,15 @@ import { useMemo } from 'react';
 import CellTypes from '../CellTypes';
 import './GridCell.css'
 
-const Cell = ({cell, handleMouseOver, handleGridItemClicked, handleMouseDown, animation}) => {
-    const cellClass = `${Object.keys(CellTypes)[cell.value]}Cell`;
-    
+const Cell = ({cell, handleMouseOver, handleGridItemClicked, handleMouseDown, isInPath, isInExplored, animation}) => {
+    const cellClass = `${Object.keys(CellTypes)[cell.value]}Cell `;
+    const pathClass = isInPath ? ' path ' : ''; 
+    const exploredClass = !isInPath && isInExplored ? ' explored ' : '';
+
     return (
         <span    
-            style = {
-                animation !== undefined ? {animation: animation} : {}
-            }
-            className={'gridItem ' + cellClass }        
-
+            className={'gridItem ' + cellClass + pathClass + exploredClass}        
+        
             onClick = {() => handleGridItemClicked()}       
             onMouseOver = {() => handleMouseOver()}    
             onMouseDown = {() => handleMouseDown()}
