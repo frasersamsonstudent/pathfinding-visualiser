@@ -59,29 +59,31 @@
     }
 
     from {
-        transform: scale(0.2);
-        }
+        transform: scale(0.1);
+        border-radius: 100%;
+    }
     to {
-    transform: scale(1);
+        transform: scale(1);
+        border-radius: 0%;
     }
 }
 
 @keyframes growAndChangeColourForPathCell {
     0% {
-        background-color: orange
+        background-color: blue
     }
     50% {
         background-color: var(--mid-animation-color);
     }
     100% {
-        background-color: green;
+        background-color: var(--path-cell-color);
     }
 
     from {
         transform: scale(0.2);
     }
     to {
-    transform: scale(1);
+        transform: scale(1);
     }
 }
 
