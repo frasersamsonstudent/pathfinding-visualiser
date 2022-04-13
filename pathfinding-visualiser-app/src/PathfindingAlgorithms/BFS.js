@@ -22,7 +22,7 @@ const bfs = (grid, startNode, goalNode) => {
         }
     }
 
-    return undefined;
+    return exploredPositions;
 }
 
 export default bfs;
