@@ -23,4 +23,6 @@ const copyCellAndSetNewValue = (cell, newValue) => {
     return cellCopy;
 };
 
-export {Cell, copyCell, copyCellAndSetNewValue};
+const weightValue = 2;
+
+export {Cell, copyCell, copyCellAndSetNewValue, weightValue};

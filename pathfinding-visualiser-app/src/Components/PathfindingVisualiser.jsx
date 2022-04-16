@@ -8,6 +8,7 @@ import bfs from '../PathfindingAlgorithms/BFS';
 import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid } from '../PathfindingAlgorithms/util';
 import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimationForEmptyCell, getGrowWithGradientAnimationForPathCell } from '../Animations/PathAnimation';
 import Header from './Header';
+import dijkstra from '../PathfindingAlgorithms/Dijkstra';
 
 
 const PathfindingVisualiser = React.memo(() => {
@@ -329,13 +330,14 @@ const PathfindingVisualiser = React.memo(() => {
     return (
         <div className='pathfindingVisualiser'>
             <Header 
-                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle']} 
+                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra']} 
                 onClickFunctions = {
                     [
                         () => solveGrid(bfs),
                         () => resetGrid(),
                         () => removePathAndExploredFromGrid(),
                         () => togglePlacingWeighted(),
+                        () => solveGrid(dijkstra)
                     ]
                 } 
                 isSolving = {isVisualising} 

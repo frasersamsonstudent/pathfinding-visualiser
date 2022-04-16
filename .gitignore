@@ -1,1 +1,3 @@
 pathfinding-visualiser-app/.gitignore
+pathfinding-visualiser-app/package-lock.json
+.gitignore
