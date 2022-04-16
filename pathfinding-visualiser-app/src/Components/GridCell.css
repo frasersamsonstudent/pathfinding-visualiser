@@ -17,7 +17,7 @@
 }
 
 .emptyCell.weighted {
-    background-color: var(--weighted-cell-color);
+    filter: brightness(50%);
 }
 
 .path {

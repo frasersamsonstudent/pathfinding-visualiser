@@ -19,6 +19,7 @@ const PathfindingVisualiser = React.memo(() => {
     const [placingNodeType, setPlacingNodeType] = useState(undefined);
     const [isVisualising, setIsVisualising] = useState(false);
     const [isGridSolved, setIsGridSolved] = useState(false);
+    const [isPlacingWeightedNodes, setIsPlacingWeightedNodes] = useState(false);
     const animationSpeed = 0.02;
     const animationDuration = 0.06;
 
@@ -103,6 +104,7 @@ const PathfindingVisualiser = React.memo(() => {
      */
     const handleMouseEnteringCellWhileDown = (col, row) => {
         const isMovingStartOrEndNode = placingNodeType !== undefined;
+        const cellTypeAtPos = grid[row][col].value;
 
         // Clear explored nodes from grid
         if(isGridSolved) {
@@ -119,10 +121,12 @@ const PathfindingVisualiser = React.memo(() => {
                 };
                 
             }
+
+            else if(isPlacingWeightedNodes && cellTypeAtPos === CellTypes.empty) {
+                toggleWeight(col, row);
+            }
     
-            else { 
-                const cellTypeAtPos = grid[row][col].value;
-    
+            else {     
                 if(cellTypeAtPos === CellTypes.empty) {
                     updateGridCellAtIndex(col, row, CellTypes.wall);
                 }
@@ -147,7 +151,12 @@ const PathfindingVisualiser = React.memo(() => {
                 updateGridCellAtIndex(col, row, CellTypes.empty);
             }
             else if(grid[row][col].value === CellTypes.empty) {
-                updateGridCellAtIndex(col, row, CellTypes.wall);
+                if(isPlacingWeightedNodes) {
+                    toggleWeight(col, row);
+                }
+                else {
+                    updateGridCellAtIndex(col, row, CellTypes.wall);
+                }
             }
             else if(cellTypeAtPos === CellTypes.start) {
                 setPlacingNodeType(CellTypes.start);
@@ -301,15 +310,32 @@ const PathfindingVisualiser = React.memo(() => {
         clearGrid(false);
     }
 
+    const toggleWeight = (col, row) => {
+        const cellTypeAtPos = grid[row][col].value
+        if(cellTypeAtPos !== CellTypes.start && cellTypeAtPos != CellTypes.end) {
+            const newGrid = [...grid];
+            newGrid[row][col].isWeighted = !newGrid[row][col].isWeighted;
+            setGrid(newGrid);
+        }
+        
+    }
+
+    const togglePlacingWeighted = () => {
+        if(placingNodeType === undefined) {
+            setIsPlacingWeightedNodes(!isPlacingWeightedNodes);
+        }
+    }
+
     return (
         <div className='pathfindingVisualiser'>
             <Header 
-                titles = {['BFS', 'Reset', 'Remove explored']} 
+                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle']} 
                 onClickFunctions = {
                     [
                         () => solveGrid(bfs),
                         () => resetGrid(),
                         () => removePathAndExploredFromGrid(),
+                        () => togglePlacingWeighted(),
                     ]
                 } 
                 isSolving = {isVisualising} 
