@@ -7,6 +7,7 @@
     --cell-outline-color: white;
     --path-cell-color: turquoise;
     --explored-cell-color: purple;
+    --weighted-cell-color: grey;
 
     --initial-animation-color: yellow; 
     --mid-animation-color: orange;

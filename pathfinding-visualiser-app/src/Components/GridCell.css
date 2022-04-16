@@ -16,6 +16,10 @@
     background-color: var(--end-cell-color);
 }
 
+.emptyCell.weighted {
+    background-color: var(--weighted-cell-color);
+}
+
 .path {
     background-color: var(--explored-cell-color);
     animation-name: growAndChangeColourForPathCell;

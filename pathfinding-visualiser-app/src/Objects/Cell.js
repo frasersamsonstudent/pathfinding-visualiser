@@ -5,6 +5,7 @@ class Cell {
         this.row = row;
         this.isInPath = false;
         this.isInExplored = false;
+        this.isWeighted = false;
     }
 
     getKey() {

@@ -18,8 +18,9 @@ const PathfindingVisualiser = React.memo(() => {
     const [isMouseDown, setIsMouseDown] = useState(false);
     const [placingNodeType, setPlacingNodeType] = useState(undefined);
     const [isVisualising, setIsVisualising] = useState(false);
-    const animationSpeed = 0.1;
-    const animationDuration = 0.5;
+    const [isGridSolved, setIsGridSolved] = useState(false);
+    const animationSpeed = 0.02;
+    const animationDuration = 0.06;
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
@@ -39,8 +40,17 @@ const PathfindingVisualiser = React.memo(() => {
     // Create new grid when dimensions change
     useEffect(() => {
             setGrid(createGrid());
-        },
-        [gridDimensions]
+        }, [gridDimensions]
+    );
+
+    // Remove path and explored nodes when isSolved is set to false
+    useEffect(
+        () => {
+            if(!isGridSolved) {
+                removePathAndExploredFromGrid();
+            };
+        }, 
+        [isGridSolved]
     );
 
     // Functions for handling the events in the window
@@ -74,17 +84,6 @@ const PathfindingVisualiser = React.memo(() => {
         return newGrid
     };
 
-    const handleGridItemClicked = (col, row) => {
-        if(!isVisualising) {
-            if(grid[row][col].value === CellTypes.wall) {
-                updateGridCellAtIndex(col, row, CellTypes.empty);
-            }
-            else if(grid[row][col].value === CellTypes.empty) {
-                updateGridCellAtIndex(col, row, CellTypes.wall);
-            }
-        }
-    }
-
     /** Used to handle the event of mouse being over cell
      * 
      * @param {int} col column of cell mouse is in 
@@ -92,8 +91,8 @@ const PathfindingVisualiser = React.memo(() => {
      * 
      */
     const handleMouseOverCell = (col, row) => {
-        if(isMouseDown && !isVisualising) {
-            handleMouseOverAndDownInCell(col, row);
+        if(isMouseDown) {
+            handleMouseEnteringCellWhileDown(col, row);
         };
     };
 
@@ -102,8 +101,13 @@ const PathfindingVisualiser = React.memo(() => {
      * @param {*} col 
      * @param {*} row 
      */
-    const handleMouseOverAndDownInCell = (col, row) => {
+    const handleMouseEnteringCellWhileDown = (col, row) => {
         const isMovingStartOrEndNode = placingNodeType !== undefined;
+
+        // Clear explored nodes from grid
+        if(isGridSolved) {
+            setIsGridSolved(false);
+        };
 
         if(!isVisualising) {
             if(isMovingStartOrEndNode) {
@@ -135,18 +139,30 @@ const PathfindingVisualiser = React.memo(() => {
         }
     }
 
-    const handleMouseDownOnCell = (col, row) => {
+    const handleMousePressedDownInCell = (col, row) => {
         const cellTypeAtPos = grid[row][col].value;
 
-        if(cellTypeAtPos === CellTypes.start) {
-            setPlacingNodeType(CellTypes.start);
+        if(!isVisualising) {
+            if(grid[row][col].value === CellTypes.wall) {
+                updateGridCellAtIndex(col, row, CellTypes.empty);
+            }
+            else if(grid[row][col].value === CellTypes.empty) {
+                updateGridCellAtIndex(col, row, CellTypes.wall);
+            }
+            else if(cellTypeAtPos === CellTypes.start) {
+                setPlacingNodeType(CellTypes.start);
+            }
+            else if(cellTypeAtPos === CellTypes.end) {
+                setPlacingNodeType(CellTypes.end);
+            }
+            
         }
-        else if(cellTypeAtPos === CellTypes.end) {
-            setPlacingNodeType(CellTypes.end);
-        }
+        
     }
 
     const updateGridCellAtIndex = (x, y, newValue) => {
+        if(isGridSolved) { setIsGridSolved(false) };
+
         setGrid(
             grid.map((row, rowIndex) => {
                 if(rowIndex !== y) {
@@ -213,6 +229,10 @@ const PathfindingVisualiser = React.memo(() => {
     }
 
     const moveNode = (nodeToMove, newCol, newRow) => {
+        if(isGridSolved) {
+            setIsGridSolved(false);
+        };
+
         if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
             if(isInBounds(grid, newCol, newRow) && !isNodeStartOrEnd(grid, newCol, newRow)) {
                 const newGrid = [...grid];
@@ -231,42 +251,65 @@ const PathfindingVisualiser = React.memo(() => {
 
     const solveGrid = (solveAlgorithm) => {
         setIsVisualising(true);
-        const exploredPositionsMap = solveAlgorithm(grid, startNode, endNode);
+        if(isGridSolved) {
+            removePathAndExploredFromGrid();
+        }
 
+        const exploredPositionsMap = solveAlgorithm(grid, startNode, endNode);
         const path = getPathFromExplored(exploredPositionsMap, endNode);
+        
         animateGrid(exploredPositionsMap, path);
+
+        setIsGridSolved(true);
     };
 
-    /** Sets all cells in grid to be empty
+    /** Removes all path and explored nodes from grid, and optionally sets all cells to empty.
      * 
      */
-     const resetGrid = () => {
-         if(!isVisualising) {
+     const clearGrid = (setToEmpty = true) => {
+        if(!isVisualising) {
             const newGrid = [...grid];
             for(let i=0, rowCount = newGrid.length;i<rowCount;i++) {
                 for(let j=0, colCount = newGrid[0].length;j<colCount;j++) {
-                    newGrid[i][j].value = CellTypes.empty;
+                    if(setToEmpty) {
+                        newGrid[i][j].value = CellTypes.empty;
+                        newGrid[i][j].isWeighted = false;
+                    };
+
                     newGrid[i][j].isInPath = false;
                     newGrid[i][j].isInExplored = false;
                 }
             }
-    
-            newGrid[startNode.row][startNode.col].value = CellTypes.start;
-            newGrid[endNode.row][endNode.col].value = CellTypes.end;
-    
-            setGrid(newGrid);
-         }
 
+            if(setToEmpty) {
+                newGrid[startNode.row][startNode.col].value = CellTypes.start;
+                newGrid[endNode.row][endNode.col].value = CellTypes.end;
+            }
+
+            setGrid(newGrid);
+        }
     };
+
+    /** Set all cells to empty.
+     * 
+     */
+    const resetGrid = () => {
+        clearGrid(true);
+    }
+
+    const removePathAndExploredFromGrid = () => {
+        clearGrid(false);
+    }
 
     return (
         <div className='pathfindingVisualiser'>
             <Header 
-                titles = {['BFS', 'Reset']} 
+                titles = {['BFS', 'Reset', 'Remove explored']} 
                 onClickFunctions = {
                     [
                         () => solveGrid(bfs),
-                        () => resetGrid()
+                        () => resetGrid(),
+                        () => removePathAndExploredFromGrid(),
                     ]
                 } 
                 isSolving = {isVisualising} 
@@ -285,10 +328,10 @@ const PathfindingVisualiser = React.memo(() => {
                                     key = {[columnIndex, rowIndex]}
                                     cell = {cell}
                                     handleMouseOver={() => handleMouseOverCell(columnIndex, rowIndex)} 
-                                    handleGridItemClicked={() => handleGridItemClicked(columnIndex, rowIndex)} 
-                                    handleMouseDown = {() => handleMouseDownOnCell(columnIndex, rowIndex)}
+                                    handleMouseDown = {() => handleMousePressedDownInCell(columnIndex, rowIndex)}
                                     isInPath = {cell.isInPath}
                                     isInExplored = {cell.isInExplored}
+                                    isWeighted = {cell.isWeighted}
                                 />
                             })
                         }
