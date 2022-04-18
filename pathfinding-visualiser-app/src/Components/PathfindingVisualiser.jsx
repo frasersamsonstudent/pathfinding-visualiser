@@ -5,11 +5,12 @@ import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
 import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
-import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid } from '../PathfindingAlgorithms/util';
+import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWalls } from '../PathfindingAlgorithms/util';
 import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimationForEmptyCell, getGrowWithGradientAnimationForPathCell } from '../Animations/PathAnimation';
 import Header from './Header';
 import dijkstra from '../PathfindingAlgorithms/Dijkstra';
-
+import { aStar } from '../PathfindingAlgorithms/Astar';
+import {recursiveDivision} from '../MazeAlgorithms/RecursiveDivision';
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
@@ -26,7 +27,7 @@ const PathfindingVisualiser = React.memo(() => {
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([10, 10])
+        setGridDimensions([47, 47])
     }, []);
 
     useEffect(() => {
@@ -330,14 +331,17 @@ const PathfindingVisualiser = React.memo(() => {
     return (
         <div className='pathfindingVisualiser'>
             <Header 
-                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra']} 
+                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra', 'A Star', 'Outer walls', 'Recursive division']} 
                 onClickFunctions = {
                     [
                         () => solveGrid(bfs),
                         () => resetGrid(),
                         () => removePathAndExploredFromGrid(),
                         () => togglePlacingWeighted(),
-                        () => solveGrid(dijkstra)
+                        () => solveGrid(dijkstra),
+                        () => solveGrid(aStar),
+                        () => drawOuterWalls(grid, setGrid),
+                        () => recursiveDivision(grid, setGrid, 1, grid[0].length-2, 1, grid.length-2, true)
                     ]
                 } 
                 isSolving = {isVisualising} 

@@ -51,14 +51,22 @@ const getPathFromExplored = (explored, goal) => {
     }
 };
 
-const printGrid = grid => {
-    const outputRows = [];
-    grid.forEach((row, rowIndex) => {
-        outputRows.push('');
+const drawOuterWalls = (grid, setGrid) => {
+    const newGrid = [...grid];
 
-        row.forEach(cell => {outputRows[rowIndex] += cell.value.toString()})
-    });
-    console.log(outputRows);
-}
+    // Draw vertical walls
+    for(let row=0; row < grid.length; row++) {
+        newGrid[row][0].value = CellTypes.wall;
+        newGrid[row][grid.length-1].value = CellTypes.wall;
+    }
 
-export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, printGrid};
+    // Draw horizontal walls
+    for(let col=1; col < grid.length-1; col++) {
+        newGrid[0][col].value = CellTypes.wall;
+        newGrid[grid.length-1][col].value = CellTypes.wall;
+    }
+
+    setGrid(newGrid)
+};
+
+export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWalls};
