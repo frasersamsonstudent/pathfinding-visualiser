@@ -1,4 +1,5 @@
 import CellTypes from "../CellTypes";
+import Position from "../Objects/Position";
 
 const isInBounds = (grid, col, row) => {    
     if(row < 0 || row  >= grid.length || col < 0 || col >= grid[0].length) {
@@ -73,4 +74,42 @@ const drawOuterWalls = (grid, setGrid, startNode, endNode) => {
     setGrid(newGrid)
 };
 
-export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWalls};
+const drawOuterWallsAndAnimate = (grid, setGrid, setIsVisualising, startNode, endNode, animationSpeed) => {
+    setIsVisualising(true);
+    const wallsToDraw = [];
+
+    // Draw vertical walls
+    for(let row=0; row < grid.length; row++) {
+        wallsToDraw.push(Position(0, row));
+        wallsToDraw.push(Position(grid.length-1, row));
+    }
+
+    // Draw horizontal walls
+    for(let col=1; col < grid.length-1; col++) {
+        wallsToDraw.push(Position(col, 0));
+        wallsToDraw.push(Position(col, grid.length-1));
+    }
+
+    wallsToDraw.forEach((wallPos, index) => {
+        setTimeout(() => {
+            const newGrid = [...grid];
+            newGrid[wallPos.row][wallPos.col].value = CellTypes.wall;
+            setGrid(newGrid);
+        }, animationSpeed * index * 1000);
+    });
+
+    const drawingWallsDuration = wallsToDraw.length * 1000 * animationSpeed
+
+    setTimeout(
+        () => {
+            const newGrid = [...grid];
+            // Replace start and end node
+            newGrid[startNode.row][startNode.col].value = CellTypes.start;
+            newGrid[endNode.row][endNode.col].value = CellTypes.end;
+
+            setGrid(newGrid);
+        }, drawingWallsDuration
+    );
+};
+
+export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWalls, drawOuterWallsAndAnimate};

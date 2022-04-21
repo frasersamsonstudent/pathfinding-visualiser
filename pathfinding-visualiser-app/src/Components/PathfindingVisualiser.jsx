@@ -5,7 +5,7 @@ import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
 import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
-import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWalls } from '../PathfindingAlgorithms/util';
+import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWallsAndAnimate } from '../PathfindingAlgorithms/util';
 import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimationForEmptyCell, getGrowWithGradientAnimationForPathCell } from '../Animations/PathAnimation';
 import Header from './Header';
 import dijkstra from '../PathfindingAlgorithms/Dijkstra';
@@ -15,6 +15,9 @@ import {recursiveDivision} from '../MazeAlgorithms/RecursiveDivision';
 
 const animationSpeed = 0.02;
 const animationDuration = 0.06;
+const wallDrawingSpeed = 0.02;
+let isNodeUnderneathStartAWall = false;
+let isNodeUnderneathEndAWall = false;
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
@@ -118,11 +121,16 @@ const PathfindingVisualiser = React.memo(() => {
 
         if(!isVisualising) {
             if(isMovingStartOrEndNode) {
+                let isWallAtNewPosition = grid[row][col].value === CellTypes.wall;
+
                 if(placingNodeType === CellTypes.start) {
                     moveNode(startNode, col, row, setStartNode);
+                    isNodeUnderneathStartAWall = isWallAtNewPosition;
+
                 }
                 else if(placingNodeType === CellTypes.end) {
                     moveNode(endNode, col, row, setEndNode);
+                    isNodeUnderneathEndAWall = isWallAtNewPosition;
                 };
                 
             }
@@ -250,8 +258,12 @@ const PathfindingVisualiser = React.memo(() => {
         if(nodeToMove && !(nodeToMove.col === newCol && nodeToMove.row === newRow)) {
             if(isInBounds(grid, newCol, newRow) && !isNodeStartOrEnd(grid, newCol, newRow)) {
                 const newGrid = [...grid];
+                
+                let replacingCellValue = CellTypes.empty;
+                if(nodeToMove.value === CellTypes.start && isNodeUnderneathStartAWall) replacingCellValue = CellTypes.wall;
+                if(nodeToMove.value === CellTypes.end && isNodeUnderneathEndAWall) replacingCellValue = CellTypes.wall;
 
-                newGrid[nodeToMove.row][nodeToMove.col] = copyCellAndSetNewValue(newGrid[nodeToMove.row][nodeToMove.col], CellTypes.empty);
+                newGrid[nodeToMove.row][nodeToMove.col] = copyCellAndSetNewValue(newGrid[nodeToMove.row][nodeToMove.col], replacingCellValue);
                 
                 // Place node at new position and update position values
                 newGrid[newRow][newCol] = nodeToMove;
@@ -333,19 +345,32 @@ const PathfindingVisualiser = React.memo(() => {
 
     const generateMaze = (algorithm) => {
         clearGrid();
-        drawOuterWalls(grid, setGrid, startNode, endNode);
+        drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode);
 
+        setIsVisualising(true);
+        console.log("Here");
         const newGrid = [...grid];
         const wallsToDraw = [];
         algorithm(wallsToDraw, 1, grid[0].length-2, 1, grid.length-2);
 
-        wallsToDraw.forEach((pos) => {
+        drawWalls(wallsToDraw);
+    }
+
+    const drawWalls = (positionsToDrawWall) => {
+        setIsVisualising(true);
+
+        positionsToDrawWall.forEach((pos, index) => {
             if(!isNodeStartOrEnd(grid, pos.col, pos.row)) {
-                newGrid[pos.row][pos.col].value = CellTypes.wall;
+                setTimeout(() => {
+                    const newGrid = [...grid];
+                    newGrid[pos.row][pos.col].value = CellTypes.wall
+                    setGrid(newGrid);
+                }, index * wallDrawingSpeed * 1000);
             }
         });
 
-        setGrid(newGrid);
+        const totalAnimationTime = positionsToDrawWall.length * wallDrawingSpeed * 1000;
+        setTimeout(() => setIsVisualising(false), totalAnimationTime);
     }
 
     return (
@@ -360,7 +385,7 @@ const PathfindingVisualiser = React.memo(() => {
                         () => togglePlacingWeighted(),
                         () => solveGrid(dijkstra),
                         () => solveGrid(aStar),
-                        () => drawOuterWalls(grid, setGrid, startNode, endNode),
+                        () => drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode),
                         () => generateMaze(recursiveDivision)
                     ]
                 } 
