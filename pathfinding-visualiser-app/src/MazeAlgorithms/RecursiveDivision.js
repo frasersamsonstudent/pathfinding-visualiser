@@ -1,4 +1,5 @@
 import CellTypes from "../CellTypes";
+import Position from "../Objects/Position";
 
 const getRandomNumInRange = (startInclusive, endInclusive, increment) => {
     const range = Array.from({ length: (endInclusive - startInclusive) / increment + 1}, (_, i) => startInclusive + (i * increment));
@@ -30,35 +31,24 @@ const getRandomEvenNumber = (start, end) => {
     return value;
 }
 
-const drawHorizontal = (grid, setGrid, colStart, colEnd, row) => {
+const drawHorizontal = (wallPositions, colStart, colEnd, row) => {
     const gapPosition = getRandomOddNumber(colStart, colEnd);
-    const newGrid = [...grid];
-
+    
     for(let i=colStart; i<=colEnd; i++) {
-        if(i != gapPosition) newGrid[row][i].value = CellTypes.wall;
+        if(i != gapPosition) wallPositions.push(Position(i, row));
     };
-
-    setGrid(newGrid);
 };
 
-const drawVertical = (grid, setGrid, col, rowStart, rowEnd) => {
+const drawVertical = (wallPositions, col, rowStart, rowEnd) => {
     const gapPosition = getRandomOddNumber(rowStart, rowEnd);
-    const newGrid = [...grid];
 
     for(let i=rowStart; i<=rowEnd ; i++) {
-        if(i != gapPosition) newGrid[i][col].value = CellTypes.wall
+        if(i != gapPosition) wallPositions.push(Position(col, i));
     }
-
-    setGrid(newGrid);
 };
 
-const drawRandomWallInBounds = (grid, setGrid, startCol, endCol) => {
-    const drawCol = getRandomEvenNumber(startCol, endCol);
-    drawVertical(grid, setGrid, drawCol, 1, grid.length-2);
-}
-
-const recursiveDivision = (grid, setGrid, startCol, endCol, startRow, endRow) => {
-    if(!grid || startCol >= endCol || startRow >= endRow || (endCol - startCol) < 2 || (endRow - startRow) < 2) {
+const recursiveDivision = (wallPositions, startCol, endCol, startRow, endRow) => {
+    if(startCol >= endCol || startRow >= endRow || (endCol - startCol) < 2 || (endRow - startRow) < 2) {
         return;
     } 
 
@@ -66,19 +56,20 @@ const recursiveDivision = (grid, setGrid, startCol, endCol, startRow, endRow) =>
     
     if(isDrawingVertical) {
         const colToDrawWall = getRandomEvenNumber(startCol, endCol);
-        drawVertical(grid, setGrid, colToDrawWall, startRow, endRow);
+        drawVertical(wallPositions, colToDrawWall, startRow, endRow);
 
         // Call function recursively on sections which have been created by drawing wall
-        recursiveDivision(grid, setGrid, startCol, colToDrawWall-1, startRow, endRow);
-        recursiveDivision(grid, setGrid, colToDrawWall+1, endCol, startRow, endRow);
+        recursiveDivision(wallPositions, startCol, colToDrawWall-1, startRow, endRow);
+        recursiveDivision(wallPositions, colToDrawWall+1, endCol, startRow, endRow);
     }
     else {
         const rowToDrawWall = getRandomEvenNumber(startRow, endRow);
-        drawHorizontal(grid, setGrid, startCol, endCol, rowToDrawWall);
+        drawHorizontal(wallPositions, startCol, endCol, rowToDrawWall);
 
         // Call function recursively on sections which have been created by drawing wall
-        recursiveDivision(grid, setGrid, startCol, endCol, startRow, rowToDrawWall-1);
-        recursiveDivision(grid, setGrid, startCol, endCol, rowToDrawWall+1, endRow,);
+        recursiveDivision(wallPositions, startCol, endCol, startRow, rowToDrawWall-1);
+        recursiveDivision(wallPositions, startCol, endCol, rowToDrawWall+1, endRow,);
     }
 };
+
 export {recursiveDivision};

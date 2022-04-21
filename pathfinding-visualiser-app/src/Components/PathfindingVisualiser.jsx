@@ -12,6 +12,10 @@ import dijkstra from '../PathfindingAlgorithms/Dijkstra';
 import { aStar } from '../PathfindingAlgorithms/Astar';
 import {recursiveDivision} from '../MazeAlgorithms/RecursiveDivision';
 
+
+const animationSpeed = 0.02;
+const animationDuration = 0.06;
+
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
     const [gridDimensions, setGridDimensions] = useState([]);
@@ -22,12 +26,11 @@ const PathfindingVisualiser = React.memo(() => {
     const [isVisualising, setIsVisualising] = useState(false);
     const [isGridSolved, setIsGridSolved] = useState(false);
     const [isPlacingWeightedNodes, setIsPlacingWeightedNodes] = useState(false);
-    const animationSpeed = 0.02;
-    const animationDuration = 0.06;
+
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([47, 47])
+        setGridDimensions([25, 25])
     }, []);
 
     useEffect(() => {
@@ -328,6 +331,23 @@ const PathfindingVisualiser = React.memo(() => {
         }
     }
 
+    const generateMaze = (algorithm) => {
+        clearGrid();
+        drawOuterWalls(grid, setGrid, startNode, endNode);
+
+        const newGrid = [...grid];
+        const wallsToDraw = [];
+        algorithm(wallsToDraw, 1, grid[0].length-2, 1, grid.length-2);
+
+        wallsToDraw.forEach((pos) => {
+            if(!isNodeStartOrEnd(grid, pos.col, pos.row)) {
+                newGrid[pos.row][pos.col].value = CellTypes.wall;
+            }
+        });
+
+        setGrid(newGrid);
+    }
+
     return (
         <div className='pathfindingVisualiser'>
             <Header 
@@ -340,8 +360,8 @@ const PathfindingVisualiser = React.memo(() => {
                         () => togglePlacingWeighted(),
                         () => solveGrid(dijkstra),
                         () => solveGrid(aStar),
-                        () => drawOuterWalls(grid, setGrid),
-                        () => recursiveDivision(grid, setGrid, 1, grid[0].length-2, 1, grid.length-2, true)
+                        () => drawOuterWalls(grid, setGrid, startNode, endNode),
+                        () => generateMaze(recursiveDivision)
                     ]
                 } 
                 isSolving = {isVisualising} 

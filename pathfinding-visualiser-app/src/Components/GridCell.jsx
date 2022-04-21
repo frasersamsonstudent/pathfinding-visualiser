@@ -12,7 +12,7 @@ const Cell = ({cell, handleMouseOver, handleMouseDown, isInPath, isInExplored, i
     return (
         <span    
             className={'gridItem ' + cellClass + pathClass + exploredClass + weightedClass}        
-        
+            id = {cell.getKey()}
             onMouseOver = {() => handleMouseOver()}    
             onMouseDown = {() => handleMouseDown()}
         />  

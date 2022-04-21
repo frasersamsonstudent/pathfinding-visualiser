@@ -51,7 +51,7 @@ const getPathFromExplored = (explored, goal) => {
     }
 };
 
-const drawOuterWalls = (grid, setGrid) => {
+const drawOuterWalls = (grid, setGrid, startNode, endNode) => {
     const newGrid = [...grid];
 
     // Draw vertical walls
@@ -65,6 +65,10 @@ const drawOuterWalls = (grid, setGrid) => {
         newGrid[0][col].value = CellTypes.wall;
         newGrid[grid.length-1][col].value = CellTypes.wall;
     }
+
+    // Replace start and end node
+    newGrid[startNode.row][startNode.col].value = CellTypes.start;
+    newGrid[endNode.row][endNode.col].value = CellTypes.end;
 
     setGrid(newGrid)
 };
