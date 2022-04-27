@@ -3,7 +3,7 @@ import {useState, useEffect, useRef} from 'react';
 import './PathfindingVisualiser.css';
 import CellTypes from '../CellTypes';
 import GridCell from './GridCell';
-import {Cell, copyCell, copyCellAndSetNewValue} from '../Objects/Cell.js';
+import {Cell, copyCell, copyCellAndSetNewValue, getColAndRowFromKey} from '../Objects/Cell.js';
 import bfs from '../PathfindingAlgorithms/BFS';
 import { getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWallsAndAnimate } from '../PathfindingAlgorithms/util';
 import { getBlinkAnimation, getGrowAnimation, getGrowWithGradientAnimationForEmptyCell, getGrowWithGradientAnimationForPathCell } from '../Animations/PathAnimation';
@@ -234,9 +234,9 @@ const PathfindingVisualiser = React.memo(() => {
     };
 
     const setAnimationForExploredCells = (exploredPositionsAsList) => {
-        exploredPositionsAsList.forEach((e, index) => {
-            if(e !== undefined) {
-                const col = e.split(',')[0], row = e.split(',')[1];
+        exploredPositionsAsList.forEach((exploredPositionKey, index) => {
+            if(exploredPositionKey !== undefined) {
+                const [col, row] = getColAndRowFromKey(exploredPositionKey);
 
                 if(!isNodeStartOrEnd(grid, col, row)) {
                     setTimeout(

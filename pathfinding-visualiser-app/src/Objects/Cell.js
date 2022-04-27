@@ -11,6 +11,7 @@ class Cell {
     getKey() {
         return [this.col,this.row].toString();
     }
+
 }
 
 const copyCell = cell => {
@@ -23,6 +24,13 @@ const copyCellAndSetNewValue = (cell, newValue) => {
     return cellCopy;
 };
 
+const getColAndRowFromKey = key => {
+    return key.split(',');
+};
+
+const getKeyFromColAndRow = (col, row) => {
+    return [col, row].toString();
+}
 const weightValue = 2;
 
-export {Cell, copyCell, copyCellAndSetNewValue, weightValue};
+export {Cell, copyCell, copyCellAndSetNewValue, weightValue, getColAndRowFromKey};
