@@ -11,6 +11,7 @@ import Header from './Header';
 import dijkstra from '../PathfindingAlgorithms/Dijkstra';
 import { aStar } from '../PathfindingAlgorithms/Astar';
 import {recursiveDivision} from '../MazeAlgorithms/RecursiveDivision';
+import { kruskalMaze } from '../MazeAlgorithms/KruskalMaze';
 
 
 const animationSpeed = 0.02;
@@ -33,7 +34,7 @@ const PathfindingVisualiser = React.memo(() => {
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([25, 25])
+        setGridDimensions([37, 37])
     }, []);
 
     useEffect(() => {
@@ -343,19 +344,23 @@ const PathfindingVisualiser = React.memo(() => {
         }
     }
 
-    const generateMaze = (algorithm) => {
+    /** Generates a maze using a passed algorithm.
+     * Draws outer walls and then maze within.
+     * 
+     * algorithmArgs - arguments to be passed to maze generation function (first passes wallsToDraw, and then args)
+     */
+    const generateMaze = (algorithm, algorithmArgs) => {
         clearGrid();
         drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode);
 
         setIsVisualising(true);
-        console.log("Here");
-        const newGrid = [...grid];
-        const wallsToDraw = [];
-        algorithm(wallsToDraw, 1, grid[0].length-2, 1, grid.length-2);
 
+        const wallsToDraw = [];
+        algorithm(wallsToDraw, ...algorithmArgs);
+        
         drawWalls(wallsToDraw);
     }
-
+    
     const drawWalls = (positionsToDrawWall) => {
         setIsVisualising(true);
 
@@ -376,7 +381,7 @@ const PathfindingVisualiser = React.memo(() => {
     return (
         <div className='pathfindingVisualiser'>
             <Header 
-                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra', 'A Star', 'Outer walls', 'Recursive division']} 
+                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra', 'A Star', 'Outer walls', 'Recursive division', 'Kruskall']} 
                 onClickFunctions = {
                     [
                         () => solveGrid(bfs),
@@ -386,7 +391,12 @@ const PathfindingVisualiser = React.memo(() => {
                         () => solveGrid(dijkstra),
                         () => solveGrid(aStar),
                         () => drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode),
-                        () => generateMaze(recursiveDivision)
+                        () => generateMaze(recursiveDivision, [1, grid[0].length-2, 1, grid.length-2]),
+                        () => {
+                            const listOfWalls = [];
+                            kruskalMaze(grid, listOfWalls);
+                            drawWalls(listOfWalls);
+                        }
                     ]
                 } 
                 isSolving = {isVisualising} 

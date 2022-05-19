@@ -1,6 +1,6 @@
 import CellTypes from "../CellTypes";
 import {DisjointSet, union, isSameSet} from "../Objects/DisjointSet";
-import Position from "../Objects/Position";
+import Position, {isPositionEqual} from "../Objects/Position";
 import { getColAndRowFromKey } from "../Objects/Cell";
 
 const inBounds = (grid, col, row) => {
@@ -8,22 +8,25 @@ const inBounds = (grid, col, row) => {
 }
 
 const getNeighours = (grid, position) => {
-    const [col, row] = getColAndRowFromKey(position);
+    const col = position.col, row = position.row;
 
-    const neighbours = [[col, row+1], [col+1, row], [col, row-1], [col-1, row]];
+    let neighbours = [[col, row+2], [col+2, row], [col, row-2], [col-2, row]];
 
-    return neighbours.filter(
+    neighbours =  neighbours.filter(
         ([col, row]) => inBounds(grid, col, row)
     );
+
+    return neighbours.map((neighbourAsArr) => grid[neighbourAsArr[1]][neighbourAsArr[0]]);
     
 };
 
 const getDisjointedNeighbour = (grid, mapOfSets, position) => {
     const disjointedNeighbours = [];
 
-    for(neighbour of getNeighours(grid, position)) {
-        if(mapOfSets.get(position) !=  mapOfSets.get(neighbour.toString())) {
-            disjointedNeighoburs.push(neighbour);
+    for(let neighbour of getNeighours(grid, position)) {
+        console.log(mapOfSets, position, neighbour, "are these different sets? : ", mapOfSets.get(position) !==  mapOfSets.get(neighbour.toString()));
+        if(mapOfSets.get(position) !==  mapOfSets.get(neighbour)) {
+            disjointedNeighbours.push(neighbour);
         }
     }
 
@@ -38,17 +41,17 @@ const getDisjointedNeighbour = (grid, mapOfSets, position) => {
     return disjointedNeighbours[Math.floor(Math.random() * disjointedNeighbours.length)];
 }
 
-const joinCells = (listOfWalls, colStart, colEnd, rowStart, rowEnd) => {
+const joinCells = (grid, listOfWalls, colStart, colEnd, rowStart, rowEnd) => {
     // Make both cells walls
-    listOfWalls.add(new Position(colStart, rowStart));
-    listOfWalls.add(new Position(colEnd, rowEnd));
+    listOfWalls.push(grid[colStart][rowStart]);
+    listOfWalls.push(grid[colEnd][rowEnd]);
 
     // Make cell between the two cells a wall]
     if(rowStart === rowEnd) {
-        listOfWalls.add(new Position(colStart + ((colStart - colEnd) / 2), rowStart));
+        listOfWalls.push(grid[colStart + ((colStart - colEnd) / 2)][rowStart]);
     }
     else {
-        listOfWalls.add(new Position(colStart, rowStart + ((rowEnd - rowStart) / 2)));
+        listOfWalls.push(grid[colStart][rowStart + ((rowEnd - rowStart) / 2)]);
     }
    
 }
@@ -59,33 +62,35 @@ const getListOfNodesForAlgorithm = grid => {
     // Only return cells at odd positions, within bounds of an outer wall
     for(let row = 1; row < grid.length; row += 2) {
         for(let col = 1; col < grid[0].length; col += 2) {
-            positions.push(grid[col][row].getKey());
+            positions.push(grid[col][row]);
         }
     }
 
     return positions;
 }
 
-const kruskalMaze = (grid, listOfWalls) => {
+const kruskalMaze = (listOfWalls, grid) => {
     const listOfNodePositions = getListOfNodesForAlgorithm(grid);
     const setOfNodePositions = new Set(listOfNodePositions);
 
-
-    disjointSet = new DisjointSet(listOfNodePositions);
+    const disjointSet = new DisjointSet(listOfNodePositions);
 
     while(setOfNodePositions.size > 0) {
         const randomNodePosition = getRandomElementOfSet(setOfNodePositions);
-        const [col, row] = getColAndRowFromKey(randomNodePosition);
+        let col = randomNodePosition.col, row = randomNodePosition.row;
         setOfNodePositions.delete(randomNodePosition);
 
-        const disjointedNeighbour = getDisjointedNeighbour;
+        const disjointedNeighbour = getDisjointedNeighbour(grid, disjointSet.mapOfSets, randomNodePosition);
         if(disjointedNeighbour !== null) {
-            const [disjointedCol, disjointedRow] = disjointedNeighbour;
-            joinCells(listOfWalls, col, disjointedCol, row, disjointedRow);
+            joinCells(grid, listOfWalls, col, disjointedNeighbour.col, row, disjointedNeighbour.row);
+            union(disjointSet.mapOfSets, randomNodePosition, disjointedNeighbour, isPositionEqual);
         }
     }
+    console.log(listOfWalls)
 }
 
 const getRandomElementOfSet = set => {
     return [...set][Math.floor(Math.random() * set.size)];
 };
+
+export {kruskalMaze};

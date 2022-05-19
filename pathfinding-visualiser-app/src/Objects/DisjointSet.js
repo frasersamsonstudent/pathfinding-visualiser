@@ -11,12 +11,15 @@ class DisjointSet {
     }
 }
 
-const union = (mapOfSets, value1, value2) => {
+const union = (mapOfSets, value1, value2, compFunc = undefined) => {
     const set1 = mapOfSets.get(value1);
     const set2 = mapOfSets.get(value2);
     
-    if(set1 != set2) {
-        unionOfSets = new Set([...set1, ...set2]);
+    if(compFunc !== undefined ? !compFunc(value1, value2) : set1 !== set2) {
+        const unionOfSets = new Set();
+
+        set1.forEach((value) => unionOfSets.add(value));
+        set2.forEach((value) => unionOfSets.add(value));
 
         mapOfSets.set(value1, unionOfSets);
         mapOfSets.set(value2, unionOfSets);
