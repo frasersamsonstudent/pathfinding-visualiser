@@ -24,7 +24,6 @@ const aStar = (grid, startNode, goalNode) => {
         const nextQueueElement = queue.dequeue();
         curr = nextQueueElement.node; 
         distanceToCurr = nextQueueElement.distance;
-        console.log(curr)
 
         if(curr.col === goalNode.col && curr.row === goalNode.row) {
             return exploredPositions;

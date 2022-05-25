@@ -34,7 +34,7 @@ const PathfindingVisualiser = React.memo(() => {
 
     useEffect(() => {
         //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([37, 37])
+        setGridDimensions([33, 33])
     }, []);
 
     useEffect(() => {
@@ -317,6 +317,18 @@ const PathfindingVisualiser = React.memo(() => {
         }
     };
 
+    const fillGridWithWalls = () => {
+        const newGrid = grid.map(
+            row => row.map(cell => {
+                if(!isNodeStartOrEnd(grid, cell.col, cell.row))
+                    cell.value = CellTypes.wall;
+                return cell;
+            })
+        );
+
+        setGrid(newGrid);
+    }
+
     /** Set all cells to empty.
      * 
      */
@@ -349,26 +361,30 @@ const PathfindingVisualiser = React.memo(() => {
      * 
      * algorithmArgs - arguments to be passed to maze generation function (first passes wallsToDraw, and then args)
      */
-    const generateMaze = (algorithm, algorithmArgs) => {
-        clearGrid();
-        drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode);
+    const generateMaze = (algorithm, algorithmArgs, shouldDrawOuterWall = true, isDrawingWalls = true) => {
+        isDrawingWalls 
+            ? clearGrid()
+            : fillGridWithWalls();
+            
+        if(shouldDrawOuterWall) {
+            drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode);
+        }
+
+        const positionsToDraw = [];
 
         setIsVisualising(true);
-
-        const wallsToDraw = [];
-        algorithm(wallsToDraw, ...algorithmArgs);
-        
-        drawWalls(wallsToDraw);
+        algorithm(positionsToDraw, ...algorithmArgs);
+        drawCells(positionsToDraw, isDrawingWalls ? CellTypes.wall : CellTypes.empty);
     }
     
-    const drawWalls = (positionsToDrawWall) => {
+    const drawCells = (positionsToDrawWall, valueToDraw = CellTypes.wall) => {
         setIsVisualising(true);
 
         positionsToDrawWall.forEach((pos, index) => {
             if(!isNodeStartOrEnd(grid, pos.col, pos.row)) {
                 setTimeout(() => {
                     const newGrid = [...grid];
-                    newGrid[pos.row][pos.col].value = CellTypes.wall
+                    newGrid[pos.row][pos.col].value = valueToDraw
                     setGrid(newGrid);
                 }, index * wallDrawingSpeed * 1000);
             }
@@ -393,9 +409,26 @@ const PathfindingVisualiser = React.memo(() => {
                         () => drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode),
                         () => generateMaze(recursiveDivision, [1, grid[0].length-2, 1, grid.length-2]),
                         () => {
-                            const listOfWalls = [];
-                            kruskalMaze(grid, listOfWalls);
-                            drawWalls(listOfWalls);
+                            generateMaze(kruskalMaze, [grid], false, false);
+                            // // algorithm, algorithmArgs, shouldDrawOuterWall = true, isDrawingWalls = true
+                            // grid.forEach(row => row.forEach(cell => {
+                            //     if(!isNodeStartOrEnd(grid, cell.col, cell.row)) {
+                            //         cell.value = CellTypes.wall;
+                            //     };
+                            // }));
+
+                            // const listOfNodesToClear = [];
+                            // kruskalMaze(listOfNodesToClear, grid);
+
+                            // listOfNodesToClear.forEach((pos, index) => {
+                            //     if(!isNodeStartOrEnd(grid, pos.col, pos.row)) {
+                                    
+                            //             const newGrid = [...grid];
+                            //             newGrid[pos.row][pos.col].value = CellTypes.empty
+                            //             setGrid(newGrid);
+                                    
+                            //     }
+                            // });
                         }
                     ]
                 } 
