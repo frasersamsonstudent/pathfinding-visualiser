@@ -12,13 +12,15 @@ import dijkstra from '../PathfindingAlgorithms/Dijkstra';
 import { aStar } from '../PathfindingAlgorithms/Astar';
 import {recursiveDivision} from '../MazeAlgorithms/RecursiveDivision';
 import { kruskalMaze } from '../MazeAlgorithms/KruskalMaze';
-
+import {primsAlgorithm} from '../MazeAlgorithms/PrimsAlgorithm';
+import { recursiveBacktrackingMaze } from '../MazeAlgorithms/BacktrackingMaze';
 
 const animationSpeed = 0.02;
 const animationDuration = 0.06;
 const wallDrawingSpeed = 0.02;
 let isNodeUnderneathStartAWall = false;
 let isNodeUnderneathEndAWall = false;
+const minimumGridWidth = 7, minimumGridHeight = 7;
 
 const PathfindingVisualiser = React.memo(() => {
     const [grid, setGrid] = useState([]);
@@ -33,8 +35,24 @@ const PathfindingVisualiser = React.memo(() => {
 
 
     useEffect(() => {
-        //setGridDimensions([Math.max(2, Math.floor(window.innerWidth/80)), Math.max(2, Math.floor(window.innerWidth/80))]);
-        setGridDimensions([33, 33])
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const numPixelsForCell = 45;
+
+        // Calculate how many cells should be in x and y dimensions
+        let numCellsInRow = Math.floor(windowWidth / numPixelsForCell), numCellsInCol = Math.floor(windowHeight / numPixelsForCell);
+        if(numCellsInRow % 2 === 0) {
+            numCellsInRow -= 1;
+        }
+        if(numCellsInCol % 2 === 0) {
+            numCellsInCol -= 1;
+        }
+
+        // Check if width or height is less than minimum
+        if(numCellsInRow < minimumGridWidth) {numCellsInRow = minimumGridWidth};
+        if(numCellsInCol < minimumGridHeight) {numCellsInCol = minimumGridHeight};
+
+        setGridDimensions([numCellsInRow, numCellsInCol]);
     }, []);
 
     useEffect(() => {
@@ -397,7 +415,8 @@ const PathfindingVisualiser = React.memo(() => {
     return (
         <div className='pathfindingVisualiser'>
             <Header 
-                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra', 'A Star', 'Outer walls', 'Recursive division', 'Kruskall']} 
+                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra', 'A Star', 
+                    'Outer walls', 'Recursive division', 'Kruskall', 'Prims', 'Backtracking maze']} 
                 onClickFunctions = {
                     [
                         () => solveGrid(bfs),
@@ -410,26 +429,10 @@ const PathfindingVisualiser = React.memo(() => {
                         () => generateMaze(recursiveDivision, [1, grid[0].length-2, 1, grid.length-2]),
                         () => {
                             generateMaze(kruskalMaze, [grid], false, false);
-                            // // algorithm, algorithmArgs, shouldDrawOuterWall = true, isDrawingWalls = true
-                            // grid.forEach(row => row.forEach(cell => {
-                            //     if(!isNodeStartOrEnd(grid, cell.col, cell.row)) {
-                            //         cell.value = CellTypes.wall;
-                            //     };
-                            // }));
-
-                            // const listOfNodesToClear = [];
-                            // kruskalMaze(listOfNodesToClear, grid);
-
-                            // listOfNodesToClear.forEach((pos, index) => {
-                            //     if(!isNodeStartOrEnd(grid, pos.col, pos.row)) {
-                                    
-                            //             const newGrid = [...grid];
-                            //             newGrid[pos.row][pos.col].value = CellTypes.empty
-                            //             setGrid(newGrid);
-                                    
-                            //     }
-                            // });
-                        }
+                        },
+                        () => {generateMaze(primsAlgorithm, [grid], false, false)},
+                        () => {generateMaze(recursiveBacktrackingMaze, [grid], false, false)},
+                        
                     ]
                 } 
                 isSolving = {isVisualising} 

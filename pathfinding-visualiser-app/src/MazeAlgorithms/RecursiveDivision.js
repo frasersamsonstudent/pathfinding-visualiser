@@ -1,10 +1,6 @@
 import CellTypes from "../CellTypes";
 import Position from "../Objects/Position";
 
-const getRandomNumInRange = (startInclusive, endInclusive, increment) => {
-    const range = Array.from({ length: (endInclusive - startInclusive) / increment + 1}, (_, i) => startInclusive + (i * increment));
-};
-
 const getRandomOddNumber = (start, end) => {
     let value = Math.floor(Math.random() * ((end-start)+1)) + start;
     
