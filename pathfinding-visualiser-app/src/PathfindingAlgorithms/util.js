@@ -74,42 +74,49 @@ const drawOuterWalls = (grid, setGrid, startNode, endNode) => {
     setGrid(newGrid)
 };
 
-const drawOuterWallsAndAnimate = (grid, setGrid, setIsVisualising, startNode, endNode, animationSpeed) => {
-    setIsVisualising(true);
-    const wallsToDraw = [];
+/** Draws outer walls around the grid, with a delay between renders to animate.
+ * Asynchronous, promise will be resolved when drawing is finished.
+ * 
+ * @param {*} grid              grid of cells
+ * @param {*} setGrid           setter for grid
+ * @param {*} setIsVisualising  setter for visualising
+ * @param {*} animationSpeed    delay between updates (in milliseconds)
+ * @returns                     promise which is resolved when animating is finished
+ */
+const drawOuterWallsAndAnimate = async (grid, setGrid, setIsVisualising, animationSpeed) => {
+    return new Promise(function(resolve, reject) {
+        setIsVisualising(true);
+        const wallsToDraw = [];
 
-    // Draw vertical walls
-    for(let row=0; row < grid.length; row++) {
-        wallsToDraw.push(Position(0, row));
-        wallsToDraw.push(Position(grid.length-1, row));
-    }
+        // Draw vertical walls
+        for(let row=0; row < grid.length; row++) {
+            wallsToDraw.push(Position(0, row));
+            wallsToDraw.push(Position(grid[0].length-1, row));
+        }
 
-    // Draw horizontal walls
-    for(let col=1; col < grid.length-1; col++) {
-        wallsToDraw.push(Position(col, 0));
-        wallsToDraw.push(Position(col, grid.length-1));
-    }
+        // Draw horizontal walls
+        for(let col=1; col < grid[0].length-1; col++) {
+            wallsToDraw.push(Position(col, 0));
+            wallsToDraw.push(Position(col, grid.length-1));
+        }
 
-    wallsToDraw.forEach((wallPos, index) => {
+        wallsToDraw.forEach((wallPos, index) => {
+            setTimeout(() => {
+                if(!isNodeStartOrEnd(grid, wallPos.col, wallPos.row)) {
+                    const newGrid = [...grid];
+                    newGrid[wallPos.row][wallPos.col].value = CellTypes.wall;
+                    setGrid(newGrid);
+                }
+            }, animationSpeed * index * 1000);
+        });
+
+        const endOfDrawing = animationSpeed * wallsToDraw.length * 1000;
         setTimeout(() => {
-            const newGrid = [...grid];
-            newGrid[wallPos.row][wallPos.col].value = CellTypes.wall;
-            setGrid(newGrid);
-        }, animationSpeed * index * 1000);
+            setIsVisualising(false);
+            resolve();
+        }, endOfDrawing);
     });
-
-    const drawingWallsDuration = wallsToDraw.length * 1000 * animationSpeed
-
-    setTimeout(
-        () => {
-            const newGrid = [...grid];
-            // Replace start and end node
-            newGrid[startNode.row][startNode.col].value = CellTypes.start;
-            newGrid[endNode.row][endNode.col].value = CellTypes.end;
-
-            setGrid(newGrid);
-        }, drawingWallsDuration
-    );
+    
 };
 
 export {getNeighbours, getPathFromExplored, isInBounds, isNodeStartOrEnd, drawOuterWalls, drawOuterWallsAndAnimate};

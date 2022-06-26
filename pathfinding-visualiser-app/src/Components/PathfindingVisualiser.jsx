@@ -14,6 +14,7 @@ import {recursiveDivision} from '../MazeAlgorithms/RecursiveDivision';
 import { kruskalMaze } from '../MazeAlgorithms/KruskalMaze';
 import {primsAlgorithm} from '../MazeAlgorithms/PrimsAlgorithm';
 import { recursiveBacktrackingMaze } from '../MazeAlgorithms/BacktrackingMaze';
+import { pathfinding, maze } from '../enums';
 
 const animationSpeed = 0.02;
 const animationDuration = 0.06;
@@ -22,7 +23,7 @@ let isNodeUnderneathStartAWall = false;
 let isNodeUnderneathEndAWall = false;
 const minimumGridWidth = 7, minimumGridHeight = 7;
 
-const PathfindingVisualiser = React.memo(() => {
+const PathfindingVisualiser = () => {
     const [grid, setGrid] = useState([]);
     const [gridDimensions, setGridDimensions] = useState([]);
     const [startNode, setStartNode] = useState(new Cell(0, 0, CellTypes.start));
@@ -32,12 +33,13 @@ const PathfindingVisualiser = React.memo(() => {
     const [isVisualising, setIsVisualising] = useState(false);
     const [isGridSolved, setIsGridSolved] = useState(false);
     const [isPlacingWeightedNodes, setIsPlacingWeightedNodes] = useState(false);
-
+    const [selectedPathfindingAlgorithm, setSelectedPathfindingAlgorithm] = useState(undefined);
+    const [selectedMazeAlgorithm, setSelectedMazeAlgorithm] = useState(undefined);
 
     useEffect(() => {
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
-        const numPixelsForCell = 45;
+        const numPixelsForCell = window.innerWidth > 2000 ? 70 : 45;
 
         // Calculate how many cells should be in x and y dimensions
         let numCellsInRow = Math.floor(windowWidth / numPixelsForCell), numCellsInCol = Math.floor(windowHeight / numPixelsForCell);
@@ -374,18 +376,50 @@ const PathfindingVisualiser = React.memo(() => {
         }
     }
 
+    const createMazeWithDefaultArguments = () => {
+        console.log(selectedMazeAlgorithm);
+        switch(selectedMazeAlgorithm) {
+            case maze.BACKTRACKING:
+                generateMaze(recursiveBacktrackingMaze, [grid], false, false);
+                break;
+            case maze.KRUSKAL:
+                generateMaze(kruskalMaze, [grid], false, false);
+                break;
+            case maze.PRIMS:
+                generateMaze(primsAlgorithm, [grid], false, false);
+                break;
+            case maze.DIVISION:
+                generateMaze(recursiveDivision, [1, grid[0].length-2, 1, grid.length-2]);
+                break;
+        }
+    };   
+
+    const solveGridWithSelectedAlgorithm = () => {
+        switch(selectedPathfindingAlgorithm) {
+            case pathfinding.BFS:
+                solveGrid(bfs);
+                break;
+            case pathfinding.DIJKSTRA: 
+                solveGrid(dijkstra);
+                break;
+            case pathfinding.ASTAR:
+                solveGrid(aStar);
+                break;
+        }
+    };
+
     /** Generates a maze using a passed algorithm.
      * Draws outer walls and then maze within.
      * 
      * algorithmArgs - arguments to be passed to maze generation function (first passes wallsToDraw, and then args)
      */
-    const generateMaze = (algorithm, algorithmArgs, shouldDrawOuterWall = true, isDrawingWalls = true) => {
+    const generateMaze = async (algorithm, algorithmArgs, shouldDrawOuterWall = true, isDrawingWalls = true) => {
         isDrawingWalls 
             ? clearGrid()
             : fillGridWithWalls();
             
         if(shouldDrawOuterWall) {
-            drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode);
+            await drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, animationSpeed);
         }
 
         const positionsToDraw = [];
@@ -414,28 +448,29 @@ const PathfindingVisualiser = React.memo(() => {
 
     return (
         <div className='pathfindingVisualiser'>
-            <Header 
-                titles = {['BFS', 'Reset', 'Remove explored', 'Toggle', 'Dijkstra', 'A Star', 
-                    'Outer walls', 'Recursive division', 'Kruskall', 'Prims', 'Backtracking maze']} 
-                onClickFunctions = {
-                    [
-                        () => solveGrid(bfs),
-                        () => resetGrid(),
-                        () => removePathAndExploredFromGrid(),
-                        () => togglePlacingWeighted(),
-                        () => solveGrid(dijkstra),
-                        () => solveGrid(aStar),
-                        () => drawOuterWallsAndAnimate(grid, setGrid, setIsVisualising, startNode, endNode),
-                        () => generateMaze(recursiveDivision, [1, grid[0].length-2, 1, grid.length-2]),
-                        () => {
-                            generateMaze(kruskalMaze, [grid], false, false);
-                        },
-                        () => {generateMaze(primsAlgorithm, [grid], false, false)},
-                        () => {generateMaze(recursiveBacktrackingMaze, [grid], false, false)},
-                        
-                    ]
-                } 
-                isSolving = {isVisualising} 
+            <Header                 
+                isSolving = {isVisualising}
+                toggleWeighted = {() => togglePlacingWeighted()}
+                isPathfindingDisabled = {isVisualising || selectedPathfindingAlgorithm === undefined}
+                isMazeDisabled = {isVisualising || selectedMazeAlgorithm === undefined}
+                pathfindingIDToName = {
+                    { 
+                        [pathfinding.BFS]: "Breadth first search",
+                        [pathfinding.DIJKSTRA]: "Dijkstra",
+                        [pathfinding.ASTAR]: "A Star"
+                    }
+                }
+                mazeIDToName = {
+                    {
+                        [maze.DIVISION]: "Recursive division", 
+                        [maze.KRUSKAL]: "Kruskal",
+                        [maze.PRIMS]: "Prims",
+                        [maze.BACKTRACKING]: "Recursive backtracking"
+                    }
+                }
+                solveGrid = { () => solveGridWithSelectedAlgorithm() }
+                createMaze = { () => createMazeWithDefaultArguments() }
+                clearMaze = { () => clearMaze() }
             />
 
             <div 
@@ -460,12 +495,12 @@ const PathfindingVisualiser = React.memo(() => {
                         }
                     )
                 }
-            </div>
+            </div>    
         </div>
-    )
+
+        
+    );
     
-}, (prev, curr) => {
-    return true;
-});
+};
 
 export default PathfindingVisualiser;

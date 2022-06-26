@@ -16,7 +16,7 @@
     display: grid;
     width: 90vw;
     height: 90vh;
-    margin: auto;
+    margin: 20px auto;
 }
 
 .pathfindingVisualiser {
