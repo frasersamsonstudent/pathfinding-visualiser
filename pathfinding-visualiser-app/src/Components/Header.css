@@ -1,3 +1,10 @@
-.header {
-    font-size: 200%;
+
+.btn {
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+button[disabled], button:disabled {
+    opacity: 0.1;
+    cursor: not-allowed;
 }

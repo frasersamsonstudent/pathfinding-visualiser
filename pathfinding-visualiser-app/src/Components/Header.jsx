@@ -7,9 +7,24 @@ import './Header.css'
  * @param headerItems array of elements to display in header 
  * @returns 
  */
-const Header = ({ pathfindingIDToName, mazeIDToName, toggleWeighted, isPathfindingDisabled, isMazeDisabled, solveGrid, createMaze, clearMaze }) => {
+const Header = (
+    { 
+        pathfindingIDToName, 
+        mazeIDToName, 
+        toggleWeighted, 
+        isPathfindingDisabled, 
+        isMazeDisabled, 
+        solveGrid, 
+        createMaze, 
+        clearMaze, 
+        selectedPathfindingAlgorithm,
+        setSelectedPathfindingAlgorithm,
+        selectedMazeAlgorithm,
+        setSelectedMazeAlgorithm,
+        isVisualising, 
+    }) => {
     return <div className='header'>
-        <Navbar bg = "light" expand = "lg">
+        <Navbar bg = "dark" expand = "lg" variant = "dark">
             <Container>
                 <Navbar.Toggle aria-controls="navbar" />
                     <Navbar.Collapse>
@@ -18,7 +33,7 @@ const Header = ({ pathfindingIDToName, mazeIDToName, toggleWeighted, isPathfindi
                                 {
                                     Object.entries(pathfindingIDToName).map(([id, name]) => {
                                         return (
-                                            <NavDropdown.Item onClick = {() => setSelectedPathfindingAlgorithm(id)}>
+                                            <NavDropdown.Item className = "dark" onClick = {() => setSelectedPathfindingAlgorithm(parseInt(id))}>
                                                 {name} 
                                             </NavDropdown.Item>
                                         );
@@ -30,7 +45,7 @@ const Header = ({ pathfindingIDToName, mazeIDToName, toggleWeighted, isPathfindi
                                 {
                                     Object.entries(mazeIDToName).map(([id, name]) => {
                                         return (
-                                            <NavDropdown.Item onClick = {() => setSelectedPathfindingAlgorithm(id)}>
+                                            <NavDropdown.Item onClick = {() => setSelectedMazeAlgorithm(parseInt(id))}>
                                                 {name} 
                                             </NavDropdown.Item>
                                         );
@@ -39,22 +54,22 @@ const Header = ({ pathfindingIDToName, mazeIDToName, toggleWeighted, isPathfindi
                                 }
                             </NavDropdown>
 
-                            <button className="btn btn-primary" onClick = {toggleWeighted}>Toggle placing weighted nodes</button>                       
-                            <button className="btn btn-secondary" onClick = {clearMaze}>Clear maze</button>
-                            <button
-                                className="btn btn-success"
-                                disabled = {isPathfindingDisabled}
-                                onClick = {solveGrid}
-                            >
-                                Visualise pathfinding algorithm 
-                            </button>
+                            <button className="btn btn-primary my-auto" onClick = {toggleWeighted} disabled = {isVisualising}>Toggle placing weighted nodes</button>                       
+                            <button className="btn btn-secondary" onClick = {clearMaze} disabled = {isVisualising}>Clear maze</button>
                             <button
                                 className="btn btn-success"
                                 disabled = {isMazeDisabled}
                                 onClick = {createMaze}
                             >
-                                Create maze
+                                {selectedMazeAlgorithm !== undefined ? `Create maze with ${mazeIDToName[selectedMazeAlgorithm]}` : "Create maze"}
                             </button>  
+                            <button
+                                className="btn btn-success"
+                                disabled = {isPathfindingDisabled}
+                                onClick = {solveGrid}
+                            >
+                                {selectedPathfindingAlgorithm !== undefined ? `Visualise ${pathfindingIDToName[selectedPathfindingAlgorithm]}` : "Solve grid"}
+                            </button>
                         </Nav>
                     </Navbar.Collapse>
             </Container>

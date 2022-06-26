@@ -377,7 +377,6 @@ const PathfindingVisualiser = () => {
     }
 
     const createMazeWithDefaultArguments = () => {
-        console.log(selectedMazeAlgorithm);
         switch(selectedMazeAlgorithm) {
             case maze.BACKTRACKING:
                 generateMaze(recursiveBacktrackingMaze, [grid], false, false);
@@ -414,6 +413,10 @@ const PathfindingVisualiser = () => {
      * algorithmArgs - arguments to be passed to maze generation function (first passes wallsToDraw, and then args)
      */
     const generateMaze = async (algorithm, algorithmArgs, shouldDrawOuterWall = true, isDrawingWalls = true) => {
+        if(isGridSolved) {
+            removePathAndExploredFromGrid();
+        }
+        
         isDrawingWalls 
             ? clearGrid()
             : fillGridWithWalls();
@@ -455,22 +458,28 @@ const PathfindingVisualiser = () => {
                 isMazeDisabled = {isVisualising || selectedMazeAlgorithm === undefined}
                 pathfindingIDToName = {
                     { 
-                        [pathfinding.BFS]: "Breadth first search",
+                        [pathfinding.BFS]: "Breadth First Search",
                         [pathfinding.DIJKSTRA]: "Dijkstra",
-                        [pathfinding.ASTAR]: "A Star"
+                        [pathfinding.ASTAR]: "A*"
                     }
                 }
                 mazeIDToName = {
                     {
-                        [maze.DIVISION]: "Recursive division", 
+                        [maze.DIVISION]: "Recursive Division", 
                         [maze.KRUSKAL]: "Kruskal",
                         [maze.PRIMS]: "Prims",
-                        [maze.BACKTRACKING]: "Recursive backtracking"
+                        [maze.BACKTRACKING]: "Recursive Backtracking"
                     }
                 }
                 solveGrid = { () => solveGridWithSelectedAlgorithm() }
                 createMaze = { () => createMazeWithDefaultArguments() }
-                clearMaze = { () => clearMaze() }
+                clearMaze = { () => clearGrid() }
+                selectedPathfindingAlgorithm = {selectedPathfindingAlgorithm}
+                selectedMazeAlgorithm = {selectedMazeAlgorithm}
+                setSelectedPathfindingAlgorithm = { (algorithm) => setSelectedPathfindingAlgorithm(algorithm) }
+                setSelectedMazeAlgorithm = { (algorithm) => setSelectedMazeAlgorithm(algorithm) }
+                isVisualising = {isVisualising
+                }
             />
 
             <div 
