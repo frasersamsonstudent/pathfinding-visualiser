@@ -35,6 +35,7 @@ const PathfindingVisualiser = () => {
     const [isPlacingWeightedNodes, setIsPlacingWeightedNodes] = useState(false);
     const [selectedPathfindingAlgorithm, setSelectedPathfindingAlgorithm] = useState(undefined);
     const [selectedMazeAlgorithm, setSelectedMazeAlgorithm] = useState(undefined);
+    const cellRef = useRef([]);
 
     useEffect(() => {
         const windowWidth = window.innerWidth;
@@ -70,6 +71,7 @@ const PathfindingVisualiser = () => {
     // Create new grid when dimensions change
     useEffect(() => {
             setGrid(createGrid());
+            cellRef.current = cellRef.current.slice(0, gridDimensions[0] * gridDimensions[1]);
         }, [gridDimensions]
     );
 
@@ -82,6 +84,11 @@ const PathfindingVisualiser = () => {
         }, 
         [isGridSolved]
     );
+
+    // Get a cell from a 1 dimensional array from a column and a row 
+    const get1DPositionFromCoordinate = (col, row, numItemsInRow) => {
+        return (row * numItemsInRow) + col;
+    };
 
     // Functions for handling the events in the window
     const handleMouseDownWindowEvent = () => {
@@ -482,6 +489,13 @@ const PathfindingVisualiser = () => {
                 }
             />
 
+            <button 
+                onClick = {() => {
+                    cellRef.current[0].className = "gridItem wallCell"; /* Update cells during animation by accessing ref, and then at end actually upgrade full grid potentially so correct props passed etc */
+                }
+            }>
+                test button
+            </button>
             <div 
                 draggable='false' 
                 className="gridContainer" 
@@ -499,6 +513,9 @@ const PathfindingVisualiser = () => {
                                     isInPath = {cell.isInPath}
                                     isInExplored = {cell.isInExplored}
                                     isWeighted = {cell.isWeighted}
+                                    cellRef = {
+                                        element => cellRef.current[get1DPositionFromCoordinate(columnIndex, rowIndex, gridDimensions[0])] = element
+                                    }
                                 />
                             })
                         }
